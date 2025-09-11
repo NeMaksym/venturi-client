@@ -16,12 +16,25 @@ const getInitialTheme = (): PaletteMode => {
     return 'light'
 }
 
+const getInitialDebug = (): boolean => {
+    try {
+        const urlParams = new URLSearchParams(window.location.search)
+        return urlParams.has('debug')
+    } catch (error) {
+        console.warn('Failed to read debug parameter from URL:', error)
+    }
+
+    return false
+}
+
 export class UiStore {
     mode: PaletteMode
+    debug: boolean
 
     constructor() {
         makeAutoObservable(this)
         this.mode = getInitialTheme()
+        this.debug = getInitialDebug()
 
         reaction(
             () => this.mode,

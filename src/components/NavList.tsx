@@ -6,13 +6,19 @@ import ListItemText from '@mui/material/ListItemText'
 import Box from '@mui/material/Box'
 import { useNavigate, useLocation } from 'react-router-dom'
 
-import { uploadPage, expensesPages } from '../pages/routes'
+import { uploadPage, expensesPages, debugPages } from '../pages/routes'
+import { useStore } from '../context/StoreContext'
 
 const NAVIGATION_WIDTH = 240
 
 export const NavList: React.FC = () => {
     const navigate = useNavigate()
     const location = useLocation()
+    const { uiStore } = useStore()
+
+    const navigateWithParams = (path: string) => {
+        navigate(`${path}${location.search}`)
+    }
 
     return (
         <Box
@@ -27,7 +33,7 @@ export const NavList: React.FC = () => {
                 {uploadPage.map(({ path, name }) => (
                     <ListItem key={path} disablePadding>
                         <ListItemButton
-                            onClick={() => navigate(path)}
+                            onClick={() => navigateWithParams(path)}
                             selected={location.pathname === path}
                         >
                             <ListItemText primary={name} />
@@ -37,7 +43,9 @@ export const NavList: React.FC = () => {
 
                 <ListItem disablePadding>
                     <ListItemButton
-                        onClick={() => navigate(expensesPages[0]?.path ?? '')}
+                        onClick={() =>
+                            navigateWithParams(expensesPages[0]?.path ?? '')
+                        }
                     >
                         <ListItemText primary="Expenses" />
                     </ListItemButton>
@@ -46,7 +54,7 @@ export const NavList: React.FC = () => {
                 {expensesPages.map(({ path, name }) => (
                     <ListItem key={path} disablePadding>
                         <ListItemButton
-                            onClick={() => navigate(path)}
+                            onClick={() => navigateWithParams(path)}
                             selected={location.pathname === path}
                             sx={{ pl: 4 }}
                         >
@@ -54,6 +62,18 @@ export const NavList: React.FC = () => {
                         </ListItemButton>
                     </ListItem>
                 ))}
+
+                {uiStore.debug &&
+                    debugPages.map(({ path, name }) => (
+                        <ListItem key={path} disablePadding>
+                            <ListItemButton
+                                onClick={() => navigateWithParams(path)}
+                                selected={location.pathname === path}
+                            >
+                                <ListItemText primary={name} />
+                            </ListItemButton>
+                        </ListItem>
+                    ))}
             </List>
         </Box>
     )
