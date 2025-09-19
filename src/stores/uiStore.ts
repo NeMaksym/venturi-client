@@ -1,7 +1,7 @@
 import { makeAutoObservable, reaction } from 'mobx'
 import { PaletteMode } from '@mui/material/styles'
 
-const THEME_STORAGE_KEY = 'ventury-theme-mode'
+const THEME_STORAGE_KEY = 'venturi-theme-mode'
 
 const getInitialTheme = (): PaletteMode => {
     try {

@@ -1,6 +1,6 @@
 import type { IDBPObjectStore, StoreNames } from 'idb'
 
-import { Stores, VenturyDB } from './schema'
+import { Stores, VenturiDB } from './schema'
 
 const DEFAULT_CATEGORIES: string[] = [
     '🎓 Education',
@@ -18,8 +18,8 @@ const DEFAULT_CATEGORIES: string[] = [
 ]
 
 type ExpenseCategoryStore = IDBPObjectStore<
-    VenturyDB,
-    ArrayLike<StoreNames<VenturyDB>>,
+    VenturiDB,
+    ArrayLike<StoreNames<VenturiDB>>,
     typeof Stores.EXPENSE_CATEGORIES,
     'versionchange'
 >

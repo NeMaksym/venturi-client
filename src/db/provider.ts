@@ -1,10 +1,10 @@
 import { openDB, IDBPDatabase } from 'idb'
 
-import { VenturyDB } from './schema'
+import { VenturiDB } from './schema'
 import { migrations } from './migrations'
 
 export const DB_CONFIG = {
-    name: 'ventury-db',
+    name: 'venturi-db',
     version: 1,
 } as const
 
@@ -18,17 +18,17 @@ export class DBProvider {
         }
     }
 
-    #db: IDBPDatabase<VenturyDB> | null = null
-    #dbPromise: Promise<IDBPDatabase<VenturyDB>> | null = null
+    #db: IDBPDatabase<VenturiDB> | null = null
+    #dbPromise: Promise<IDBPDatabase<VenturiDB>> | null = null
 
-    get db(): IDBPDatabase<VenturyDB> | Promise<IDBPDatabase<VenturyDB>> {
+    get db(): IDBPDatabase<VenturiDB> | Promise<IDBPDatabase<VenturiDB>> {
         if (this.#db) return this.#db
         if (this.#dbPromise) return this.#dbPromise
 
         return this.#open()
     }
 
-    async #open(): Promise<IDBPDatabase<VenturyDB>> {
+    async #open(): Promise<IDBPDatabase<VenturiDB>> {
         this.#dbPromise = this.#openImplementation()
             .then((db) => {
                 this.#db = db
@@ -41,8 +41,8 @@ export class DBProvider {
         return await this.#dbPromise
     }
 
-    async #openImplementation(): Promise<IDBPDatabase<VenturyDB>> {
-        return openDB<VenturyDB>(DB_CONFIG.name, DB_CONFIG.version, {
+    async #openImplementation(): Promise<IDBPDatabase<VenturiDB>> {
+        return openDB<VenturiDB>(DB_CONFIG.name, DB_CONFIG.version, {
             blocked: () =>
                 console.warn('Database upgrade blocked by another connection'),
             blocking: () =>

@@ -19,7 +19,7 @@ export const TopBar: React.FC = () => {
         >
             <Toolbar>
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    Ventury{' '}
+                    Venturi{' '}
                     <Box component="sup" sx={{ fontSize: '0.6em', ml: -0.5 }}>
                         Beta
                     </Box>

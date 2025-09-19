@@ -9,7 +9,7 @@ export const Stores = {
     INCOMES: 'incomes',
 } as const
 
-export interface VenturyDB extends DBSchema {
+export interface VenturiDB extends DBSchema {
     [Stores.EXPENSES]: {
         key: string
         value: SystemTransaction

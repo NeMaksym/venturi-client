@@ -1,9 +1,9 @@
 import { IDBPDatabase } from 'idb'
 
-import { VenturyDB, Stores } from './schema'
+import { VenturiDB, Stores } from './schema'
 import { seedDefaultCategories } from './seeds'
 
-const initializeDB = (db: IDBPDatabase<VenturyDB>) => {
+const initializeDB = (db: IDBPDatabase<VenturiDB>) => {
     const expensesStore = db.createObjectStore(Stores.EXPENSES, {
         keyPath: 'id',
     })
