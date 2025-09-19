@@ -1,9 +1,10 @@
-import { getDb, Stores } from '../connect'
+import { Stores } from '../schema'
+import { DBProvider } from '../provider'
 import { SystemTransaction } from '../../types'
 
 export class ExpenseService {
     async expenseExists(expense: SystemTransaction): Promise<boolean> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSES, 'readonly')
         const store = tx.objectStore(Stores.EXPENSES)
         const timeIndex = store.index('time')
@@ -22,7 +23,7 @@ export class ExpenseService {
     }
 
     async getAllExpenses(): Promise<SystemTransaction[]> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSES, 'readonly')
         const store = tx.objectStore(Stores.EXPENSES)
 
@@ -38,7 +39,7 @@ export class ExpenseService {
         startDate: Date,
         endDate: Date
     ): Promise<SystemTransaction[]> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSES, 'readonly')
         const store = tx.objectStore(Stores.EXPENSES)
         const timeIndex = store.index('time')
@@ -58,7 +59,7 @@ export class ExpenseService {
     async getExpensesByCategory(
         category: string
     ): Promise<SystemTransaction[]> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSES, 'readonly')
         const store = tx.objectStore(Stores.EXPENSES)
         const categoryIndex = store.index('category')
@@ -72,7 +73,7 @@ export class ExpenseService {
     }
 
     async getExpenseById(id: string): Promise<SystemTransaction | undefined> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSES, 'readonly')
         const store = tx.objectStore(Stores.EXPENSES)
 
@@ -97,7 +98,7 @@ export class ExpenseService {
             }
         }
 
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSES, 'readwrite')
         const store = tx.objectStore(Stores.EXPENSES)
 
@@ -113,7 +114,7 @@ export class ExpenseService {
     async updateExpense(
         expense: SystemTransaction
     ): Promise<SystemTransaction> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSES, 'readwrite')
         const store = tx.objectStore(Stores.EXPENSES)
 
@@ -127,7 +128,7 @@ export class ExpenseService {
     }
 
     async deleteExpense(id: string): Promise<void> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSES, 'readwrite')
         const store = tx.objectStore(Stores.EXPENSES)
 

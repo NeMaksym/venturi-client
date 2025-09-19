@@ -1,9 +1,10 @@
-import { getDb, Stores } from '../connect'
+import { DBProvider } from '../provider'
+import { Stores } from '../schema'
 import { SystemTransaction } from '../../types'
 
 export class IncomeService {
     async transactionExists(transaction: SystemTransaction): Promise<boolean> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.INCOMES, 'readonly')
         const store = tx.objectStore(Stores.INCOMES)
         const timeIndex = store.index('time')
@@ -39,7 +40,7 @@ export class IncomeService {
             }
         }
 
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.INCOMES, 'readwrite')
         const store = tx.objectStore(Stores.INCOMES)
 
@@ -53,7 +54,7 @@ export class IncomeService {
     }
 
     async getAllIncomes(): Promise<SystemTransaction[]> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.INCOMES, 'readonly')
         const store = tx.objectStore(Stores.INCOMES)
 
@@ -69,7 +70,7 @@ export class IncomeService {
         startDate: Date,
         endDate: Date
     ): Promise<SystemTransaction[]> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.INCOMES, 'readonly')
         const store = tx.objectStore(Stores.INCOMES)
         const timeIndex = store.index('time')
@@ -87,7 +88,7 @@ export class IncomeService {
     }
 
     async getIncomeById(id: string): Promise<SystemTransaction | undefined> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.INCOMES, 'readonly')
         const store = tx.objectStore(Stores.INCOMES)
 
@@ -100,7 +101,7 @@ export class IncomeService {
     }
 
     async updateIncome(income: SystemTransaction): Promise<SystemTransaction> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.INCOMES, 'readwrite')
         const store = tx.objectStore(Stores.INCOMES)
 
@@ -114,7 +115,7 @@ export class IncomeService {
     }
 
     async deleteIncome(id: string): Promise<void> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.INCOMES, 'readwrite')
         const store = tx.objectStore(Stores.INCOMES)
 

@@ -1,9 +1,10 @@
-import { getDb, Stores } from '../connect'
+import { Stores } from '../schema'
+import { DBProvider } from '../provider'
 import { SystemSubTransaction } from '../../types'
 
 export class SubExpenseService {
     async getAllSubExpenses(): Promise<SystemSubTransaction[]> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.SUB_EXPENSES, 'readonly')
         const store = tx.objectStore(Stores.SUB_EXPENSES)
 
@@ -19,7 +20,7 @@ export class SubExpenseService {
         startDate: Date,
         endDate: Date
     ): Promise<SystemSubTransaction[]> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.SUB_EXPENSES, 'readonly')
         const store = tx.objectStore(Stores.SUB_EXPENSES)
         const timeIndex = store.index('time')
@@ -39,7 +40,7 @@ export class SubExpenseService {
     async getSubExpensesByParentId(
         parentId: string
     ): Promise<SystemSubTransaction[]> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.SUB_EXPENSES, 'readonly')
         const store = tx.objectStore(Stores.SUB_EXPENSES)
         const parentIdIndex = store.index('parentId')
@@ -55,7 +56,7 @@ export class SubExpenseService {
     async getSubExpensesByCategory(
         category: string
     ): Promise<SystemSubTransaction[]> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.SUB_EXPENSES, 'readonly')
         const store = tx.objectStore(Stores.SUB_EXPENSES)
         const categoryIndex = store.index('category')
@@ -71,7 +72,7 @@ export class SubExpenseService {
     async getSubExpenseById(
         id: string
     ): Promise<SystemSubTransaction | undefined> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.SUB_EXPENSES, 'readonly')
         const store = tx.objectStore(Stores.SUB_EXPENSES)
 
@@ -92,7 +93,7 @@ export class SubExpenseService {
         if (subExpense.referenceAmount <= 0) {
             throw new Error('Sub-expense referenceAmount must be positive')
         }
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.SUB_EXPENSES, 'readwrite')
         const store = tx.objectStore(Stores.SUB_EXPENSES)
 
@@ -108,7 +109,7 @@ export class SubExpenseService {
     async updateSubExpense(
         subExpense: SystemSubTransaction
     ): Promise<SystemSubTransaction> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.SUB_EXPENSES, 'readwrite')
         const store = tx.objectStore(Stores.SUB_EXPENSES)
 
@@ -122,7 +123,7 @@ export class SubExpenseService {
     }
 
     async deleteSubExpense(id: string): Promise<void> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.SUB_EXPENSES, 'readwrite')
         const store = tx.objectStore(Stores.SUB_EXPENSES)
 

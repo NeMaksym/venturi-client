@@ -1,9 +1,10 @@
-import { getDb, Stores } from '../connect'
+import { Stores } from '../schema'
+import { DBProvider } from '../provider'
 import { Category } from '../../types'
 
 export class ExpenseCategoryService {
     async getAllCategories(): Promise<Category[]> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSE_CATEGORIES, 'readonly')
         const store = tx.objectStore(Stores.EXPENSE_CATEGORIES)
 
@@ -16,7 +17,7 @@ export class ExpenseCategoryService {
     }
 
     async getCategoryById(id: string): Promise<Category | undefined> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSE_CATEGORIES, 'readonly')
         const store = tx.objectStore(Stores.EXPENSE_CATEGORIES)
 
@@ -35,7 +36,7 @@ export class ExpenseCategoryService {
         }
         const category: Category = { id: crypto.randomUUID(), label: trimmed }
 
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSE_CATEGORIES, 'readwrite')
         const store = tx.objectStore(Stores.EXPENSE_CATEGORIES)
 
@@ -49,7 +50,7 @@ export class ExpenseCategoryService {
     }
 
     async removeCategory(id: string): Promise<void> {
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSE_CATEGORIES, 'readwrite')
         const store = tx.objectStore(Stores.EXPENSE_CATEGORIES)
 
@@ -67,7 +68,7 @@ export class ExpenseCategoryService {
             throw new Error('Category label cannot be empty')
         }
 
-        const db = await getDb()
+        const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSE_CATEGORIES, 'readwrite')
         const store = tx.objectStore(Stores.EXPENSE_CATEGORIES)
 
