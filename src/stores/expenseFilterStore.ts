@@ -57,7 +57,7 @@ export class ExpenseFilterStore {
     labels: string[] = []
 
     constructor(root: RootStore) {
-        makeAutoObservable(this)
+        makeAutoObservable(this, {}, { autoBind: true })
         this.root = root
         this.startDate = getInitialStartDate()
         this.endDate = getInitialEndDate()

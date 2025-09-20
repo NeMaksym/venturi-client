@@ -27,7 +27,7 @@ export class ExpenseStore {
         expenseService: ExpenseService,
         subExpenseService: SubExpenseService
     ) {
-        makeAutoObservable(this)
+        makeAutoObservable(this, {}, { autoBind: true })
         this.root = root
         this.expenseService = expenseService
         this.subExpenseService = subExpenseService

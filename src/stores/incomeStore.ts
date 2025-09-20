@@ -17,7 +17,7 @@ export class IncomeStore {
     }
 
     constructor(root: RootStore, incomeService: IncomeService) {
-        makeAutoObservable(this)
+        makeAutoObservable(this, {}, { autoBind: true })
         this.root = root
         this.incomeService = incomeService
     }

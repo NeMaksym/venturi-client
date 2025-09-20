@@ -15,7 +15,7 @@ export class ExpenseCategoryStore {
     }
 
     constructor(service: ExpenseCategoryService) {
-        makeAutoObservable(this)
+        makeAutoObservable(this, {}, { autoBind: true })
         this.service = service
     }
 

@@ -32,7 +32,7 @@ export class UiStore {
     debug: boolean
 
     constructor() {
-        makeAutoObservable(this)
+        makeAutoObservable(this, {}, { autoBind: true })
         this.mode = getInitialTheme()
         this.debug = getInitialDebug()
 
