@@ -1,6 +1,10 @@
 import { DBSchema } from 'idb'
 
-import { SystemTransaction, SystemSubTransaction, Category } from '../types'
+import type {
+    SystemTransaction,
+    SystemSubTransaction,
+    Category,
+} from '../types'
 
 export const Stores = {
     EXPENSES: 'expenses',
