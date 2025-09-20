@@ -1,8 +1,50 @@
 import { DBProvider } from '../provider'
 import { Stores } from '../schema'
 import { SystemTransaction } from '../../types'
+import {
+    currency,
+    isIBAN,
+    isFourDigitString,
+    isValidUnixMillis,
+} from '../../utils'
 
 export class IncomeService {
+    #validateIncome(income: SystemTransaction): void {
+        if (!isValidUnixMillis(income.time)) {
+            throw new Error('Time should be number in unix milliseconds')
+        }
+        if (!currency.numToAlpha(income.currencyCode)) {
+            throw new Error('Invalid currency code')
+        }
+        if (income.amount <= 0) {
+            throw new Error('Income amount must be positive')
+        }
+        if (income.referenceAmount <= 0) {
+            throw new Error('Income referenceAmount must be positive')
+        }
+        if (income.operation) {
+            if (income.operation.amount <= 0) {
+                throw new Error('Income operation amount must be positive')
+            }
+            if (!currency.numToAlpha(income.operation.currencyCode)) {
+                throw new Error('Invalid operation currency code')
+            }
+        }
+        if (!('account' in income) && !('card' in income)) {
+            throw new Error('Income should have account and/or card')
+        }
+        if ('account' in income) {
+            if (!isIBAN(income.account.value)) {
+                throw new Error('Invalid IBAN')
+            }
+        }
+        if ('card' in income) {
+            if (!isFourDigitString(income.card.value)) {
+                throw new Error('Invalid last four digits')
+            }
+        }
+    }
+
     async transactionExists(transaction: SystemTransaction): Promise<boolean> {
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.INCOMES, 'readonly')
@@ -26,19 +68,7 @@ export class IncomeService {
     }
 
     async addIncome(income: SystemTransaction): Promise<SystemTransaction> {
-        if (income.amount <= 0) {
-            throw new Error('Income amount must be positive')
-        }
-
-        if (income.referenceAmount <= 0) {
-            throw new Error('Income referenceAmount must be positive')
-        }
-
-        if (income.operation) {
-            if (income.operation.amount <= 0) {
-                throw new Error('Income operation amount must be positive')
-            }
-        }
+        this.#validateIncome(income)
 
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.INCOMES, 'readwrite')
@@ -101,6 +131,8 @@ export class IncomeService {
     }
 
     async updateIncome(income: SystemTransaction): Promise<SystemTransaction> {
+        this.#validateIncome(income)
+
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.INCOMES, 'readwrite')
         const store = tx.objectStore(Stores.INCOMES)

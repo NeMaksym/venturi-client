@@ -1,8 +1,50 @@
 import { Stores } from '../schema'
 import { DBProvider } from '../provider'
 import { SystemTransaction } from '../../types'
+import {
+    currency,
+    isFourDigitString,
+    isIBAN,
+    isValidUnixMillis,
+} from '../../utils'
 
 export class ExpenseService {
+    #validateExpense(expense: SystemTransaction): void {
+        if (!isValidUnixMillis(expense.time)) {
+            throw new Error('Time should be number in unix milliseconds')
+        }
+        if (!currency.numToAlpha(expense.currencyCode)) {
+            throw new Error('Invalid currency code')
+        }
+        if (expense.amount >= 0) {
+            throw new Error('Expense amount must be negative')
+        }
+        if (expense.referenceAmount <= 0) {
+            throw new Error('Expense referenceAmount must be positive')
+        }
+        if (expense.operation) {
+            if (expense.operation.amount <= 0) {
+                throw new Error('Expense operation amount must be positive')
+            }
+            if (!currency.numToAlpha(expense.operation.currencyCode)) {
+                throw new Error('Invalid operation currency code')
+            }
+        }
+        if (!('account' in expense) && !('card' in expense)) {
+            throw new Error('Expense should have account and/or card')
+        }
+        if ('account' in expense) {
+            if (!isIBAN(expense.account.value)) {
+                throw new Error('Invalid IBAN')
+            }
+        }
+        if ('card' in expense) {
+            if (!isFourDigitString(expense.card.value)) {
+                throw new Error('Invalid last four digits')
+            }
+        }
+    }
+
     async expenseExists(expense: SystemTransaction): Promise<boolean> {
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSES, 'readonly')
@@ -86,17 +128,7 @@ export class ExpenseService {
     }
 
     async addExpense(expense: SystemTransaction): Promise<SystemTransaction> {
-        if (expense.amount >= 0) {
-            throw new Error('Expense amount must be negative')
-        }
-        if (expense.referenceAmount <= 0) {
-            throw new Error('Expense referenceAmount must be positive')
-        }
-        if (expense.operation) {
-            if (expense.operation.amount <= 0) {
-                throw new Error('Expense operation amount must be positive')
-            }
-        }
+        this.#validateExpense(expense)
 
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSES, 'readwrite')
@@ -114,6 +146,8 @@ export class ExpenseService {
     async updateExpense(
         expense: SystemTransaction
     ): Promise<SystemTransaction> {
+        this.#validateExpense(expense)
+
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSES, 'readwrite')
         const store = tx.objectStore(Stores.EXPENSES)

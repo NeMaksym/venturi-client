@@ -1,8 +1,42 @@
 import { Stores } from '../schema'
 import { DBProvider } from '../provider'
 import { SystemSubTransaction } from '../../types'
+import {
+    currency,
+    isFourDigitString,
+    isIBAN,
+    isValidUnixMillis,
+} from '../../utils'
 
 export class SubExpenseService {
+    #validateSubExpense(subExpense: SystemSubTransaction): void {
+        if (!isValidUnixMillis(subExpense.time)) {
+            throw new Error('Time should be number in unix milliseconds')
+        }
+        if (!currency.numToAlpha(subExpense.currencyCode)) {
+            throw new Error('Invalid currency code')
+        }
+        if (subExpense.amount >= 0) {
+            throw new Error('Expense amount must be negative')
+        }
+        if (subExpense.referenceAmount <= 0) {
+            throw new Error('Expense referenceAmount must be positive')
+        }
+        if (!subExpense.account && !subExpense.card) {
+            throw new Error('Sub-expense should have account and/or card')
+        }
+        if ('account' in subExpense) {
+            if (!isIBAN(subExpense.account.value)) {
+                throw new Error('Invalid IBAN')
+            }
+        }
+        if ('card' in subExpense) {
+            if (!isFourDigitString(subExpense.card.value)) {
+                throw new Error('Invalid last four digits')
+            }
+        }
+    }
+
     async getAllSubExpenses(): Promise<SystemSubTransaction[]> {
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.SUB_EXPENSES, 'readonly')
@@ -87,12 +121,8 @@ export class SubExpenseService {
     async addSubExpense(
         subExpense: SystemSubTransaction
     ): Promise<SystemSubTransaction> {
-        if (subExpense.amount >= 0) {
-            throw new Error('Sub-expense amount must be negative')
-        }
-        if (subExpense.referenceAmount <= 0) {
-            throw new Error('Sub-expense referenceAmount must be positive')
-        }
+        this.#validateSubExpense(subExpense)
+
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.SUB_EXPENSES, 'readwrite')
         const store = tx.objectStore(Stores.SUB_EXPENSES)
@@ -109,6 +139,8 @@ export class SubExpenseService {
     async updateSubExpense(
         subExpense: SystemSubTransaction
     ): Promise<SystemSubTransaction> {
+        this.#validateSubExpense(subExpense)
+
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.SUB_EXPENSES, 'readwrite')
         const store = tx.objectStore(Stores.SUB_EXPENSES)
