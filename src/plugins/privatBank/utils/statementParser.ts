@@ -42,9 +42,15 @@ class PrivateBankStatementRow {
     }
 
     private get maskedPan(): string {
-        const maskedPan = this.row[2]
+        let maskedPan = this.row[2]
 
-        if (typeof maskedPan !== 'string' || !maskedPan.length) {
+        if (typeof maskedPan !== 'string') {
+            throw new Error(`Row ${this.rowIndex} has invalid card value`)
+        }
+
+        maskedPan = maskedPan.replace(/\s+/g, '')
+
+        if (maskedPan.length < 16) {
             throw new Error(`Row ${this.rowIndex} has invalid card value`)
         }
 
@@ -152,13 +158,6 @@ class PrivateBankStatementRow {
         return Number(code.number)
     }
 
-    private getAccount(): SourceTransaction['account'] {
-        return {
-            type: 'maskedPan',
-            value: this.maskedPan.trim(),
-        }
-    }
-
     public get transaction(): SourceTransaction {
         return {
             time: this.getTimestamp(),
@@ -169,7 +168,10 @@ class PrivateBankStatementRow {
                 amount: this.toSmallestUnit(this.operationAmount),
                 currencyCode: this.toCurrencyCodeNumber(this.operationCurrency),
             },
-            account: this.getAccount(),
+            card: {
+                type: 'lastFour',
+                value: this.maskedPan.slice(-4),
+            },
         }
     }
 }

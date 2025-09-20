@@ -1,3 +1,4 @@
+import { pick } from 'lodash'
 import { makeAutoObservable } from 'mobx'
 
 import { RootStore } from './rootStore'
@@ -145,18 +146,19 @@ export class ExpenseStore {
         const exchangeRate = expense.referenceAmount / -expense.amount
         const subExpense: SystemSubTransaction =
             yield this.subExpenseService.addSubExpense({
-                // inherited
-                parentId: expenseId,
-                account: expense.account,
-                bank: expense.bank,
-                time: expense.time,
-                description: expense.description,
-                currencyCode: expense.currencyCode,
-                referenceCurrencyCode: expense.referenceCurrencyCode,
-                category: expense.category,
-                labels: expense.labels,
-                // own
+                ...pick(expense, [
+                    'time',
+                    'description',
+                    'currencyCode',
+                    'referenceCurrencyCode',
+                    'bank',
+                    'account',
+                    'card',
+                    'category',
+                    'labels',
+                ]),
                 id: crypto.randomUUID(),
+                parentId: expenseId,
                 amount: -toSmallestUnit(amount),
                 referenceAmount: toSmallestUnit(amount * exchangeRate),
                 capitalized: false,

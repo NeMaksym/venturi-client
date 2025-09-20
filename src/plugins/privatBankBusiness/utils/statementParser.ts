@@ -147,23 +147,16 @@ class PrivateBankStatementRow {
         return Number(code.number)
     }
 
-    private getAccount(): SourceTransaction['account'] {
-        return {
-            type: 'iban',
-            value: {
-                iban: this.iban,
-                maskedPan: [],
-            },
-        }
-    }
-
     public get transaction(): SourceTransaction {
         return {
             time: this.getTimestamp(),
             description: this.description.trim(),
             amount: this.toSmallestUnit(this.amount),
             currencyCode: this.toCurrencyCodeNumber(this.currency),
-            account: this.getAccount(),
+            account: {
+                type: 'iban',
+                value: this.iban,
+            },
         }
     }
 }

@@ -15,17 +15,18 @@ export type Category = {
 }
 
 /**
- * Represents different types of account data.
- * @type Account
- * @property {Object} maskedPan - Masked Primary Account Number
- * @property {string} maskedPan.value - The masked PAN string value
- * @property {Object} iban - International Bank Account Number
- * @property {string} iban.value.iban - The IBAN string value
- * @property {string[]} iban.value.maskedPan - Array of masked PANs. Empty if no cards. Some accounts have multiple cards.
+ * Represents different types of account identifiers.
+ * @property {string} type - type of account value
+ * @property {string} value - account identifier
  */
-type Account =
-    | { type: 'maskedPan'; value: string }
-    | { type: 'iban'; value: { iban: string; maskedPan: string[] } }
+type Account = { type: 'iban'; value: string }
+
+/**
+ * Represents different types of card identifiers.
+ * @property {string} type - type of card value
+ * @property {string} value - card identifier
+ */
+type Card = { type: 'lastFour'; value: string }
 
 /**
  * Represents the structure for a financial operation.
@@ -45,7 +46,8 @@ export interface Operation {
  * @property {string} description - Description or details of the transaction
  * @property {number} amount - Transaction amount in the smallest account currency unit (e.g., cents)
  * @property {number} currencyCode - Numerical account currency code (ISO 4217)
- * @property {Account} account - Account info
+ * @property {Account} account - Account identifier
+ * @property {Card} card - Card identifier
  * @property {string} [originalId] - Original identifier from the source system (usually transaction id from external source)
  * @property {Operation} [operation] - Operation info
  * @property {string} [comment] - Optional additional comments about the transaction
@@ -58,7 +60,8 @@ export interface SourceTransaction {
     description: string
     amount: number
     currencyCode: number
-    account: Account
+    account?: Account
+    card?: Card
     originalId?: string
     operation?: Operation
     comment?: string
@@ -90,6 +93,7 @@ export interface SystemTransaction
         | 'currencyCode'
         | 'operation'
         | 'account'
+        | 'card'
         | 'comment'
         | 'mcc'
         | 'hold'
@@ -120,6 +124,7 @@ export interface SystemSubTransaction
         | 'amount'
         | 'currencyCode'
         | 'account'
+        | 'card'
         | 'bank'
         | 'referenceAmount'
         | 'referenceCurrencyCode'

@@ -23,6 +23,7 @@
         "currency-symbol-map": "^5.1.0",
         "dayjs": "^1.11.13",
         "idb": "^8.0.3",
+        "lodash": "^4.17.21",
         "mobx": "^6.13.7",
         "react": "^19.1.1",
         "react-dom": "^19.1.1",
@@ -32,6 +33,7 @@
     "devDependencies": {
         "@parcel/reporter-bundle-analyzer": "^2.15.4",
         "@parcel/validator-typescript": "^2.15.4",
+        "@types/lodash": "^4.17.20",
         "@types/react": "^19.1.11",
         "@types/react-dom": "^19.1.8",
         "mobx-react-observer": "^1.1.0",

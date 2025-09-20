@@ -1,15 +1,15 @@
 import { SystemTransaction } from '../types'
 
 function getAccountValue(transaction: SystemTransaction): string {
-    switch (transaction.account.type) {
-        case 'maskedPan':
-            return transaction.account.value
-        case 'iban':
-            return (
-                transaction.account.value.maskedPan[0] ??
-                transaction.account.value.iban
-            )
+    if ('account' in transaction) {
+        return transaction.account.value
     }
+
+    if ('card' in transaction) {
+        return transaction.card.value
+    }
+
+    throw new Error('Each transaction should have account and/or card')
 }
 
 const DELIMITER = ':::'
