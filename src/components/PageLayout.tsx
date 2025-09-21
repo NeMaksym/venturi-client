@@ -14,15 +14,13 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
     header = null,
 }) => {
     return (
-        <Stack spacing={2}>
+        <Stack spacing={4}>
             <Stack
                 direction="row"
                 alignItems="center"
                 justifyContent="space-between"
             >
-                <Typography variant="h4" gutterBottom>
-                    {title}
-                </Typography>
+                <Typography variant="h4">{title}</Typography>
                 <Box>{header}</Box>
             </Stack>
 

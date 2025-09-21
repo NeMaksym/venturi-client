@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
+import Stack from '@mui/material/Stack'
 
 import {
     PageLayout,
@@ -75,11 +74,10 @@ export const UploadPage: React.FC = () => {
                 />
             }
         >
-            <Box sx={{ width: '100%', mt: 2 }}>
+            <Stack spacing={4}>
                 <CustomStepper activeStep={activeStep} steps={STEPS} />
-
-                <Box sx={{ mt: 4, ml: 2 }}>{renderStepContent(activeStep)}</Box>
-            </Box>
+                {renderStepContent(activeStep)}
+            </Stack>
         </PageLayout>
     )
 }

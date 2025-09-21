@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import CloudUpload from '@mui/icons-material/CloudUpload'
@@ -70,7 +69,7 @@ export const UploadPage: React.FC<UploadPageProps> = ({ uploadData }) => {
     }
 
     return (
-        <Stack spacing={2} maxWidth={600}>
+        <Stack spacing={4} maxWidth={600}>
             <ToggleButtonGroup
                 exclusive
                 size="small"
@@ -78,18 +77,21 @@ export const UploadPage: React.FC<UploadPageProps> = ({ uploadData }) => {
                 onChange={(event, next) => {
                     if (next) setProfile(next)
                 }}
-                sx={{ mb: 2 }}
             >
-                <ToggleButton value="regular">Regular</ToggleButton>
-                <ToggleButton value="business">Business</ToggleButton>
+                <ToggleButton sx={{ width: 100 }} value="regular">
+                    Regular
+                </ToggleButton>
+                <ToggleButton sx={{ width: 100 }} value="business">
+                    Business
+                </ToggleButton>
             </ToggleButtonGroup>
 
-            <Box>
+            <Stack spacing={2}>
                 <Button
+                    sx={{ width: 200 }}
                     component="label"
                     variant="outlined"
                     startIcon={<CloudUpload />}
-                    sx={{ mb: 2 }}
                 >
                     Choose Excel File
                     <VisuallyHiddenInput
@@ -112,11 +114,11 @@ export const UploadPage: React.FC<UploadPageProps> = ({ uploadData }) => {
                 )}
 
                 {error && (
-                    <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+                    <Typography variant="body2" color="error">
                         {error}
                     </Typography>
                 )}
-            </Box>
+            </Stack>
         </Stack>
     )
 }
