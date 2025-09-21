@@ -67,10 +67,6 @@ export const UploadPage: React.FC<UploadPageProps> = ({ uploadData }) => {
         <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 6 }}>
                 <Stack spacing={2}>
-                    <Typography variant="h4" component="h2" gutterBottom>
-                        Monobank
-                    </Typography>
-
                     <TokenInput value={apiToken} onChange={setApiToken} />
 
                     <Button

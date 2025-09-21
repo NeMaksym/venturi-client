@@ -32,6 +32,10 @@ class BankProvider {
     getUploadPageById(id: string): BankManifest['UploadPage'] | null {
         return this.#manifestsMap[id]?.UploadPage ?? null
     }
+
+    getLabelById(id: string): string {
+        return this.#manifestsMap[id]?.label ?? ''
+    }
 }
 
 export const bankProvider = BankProvider.instance

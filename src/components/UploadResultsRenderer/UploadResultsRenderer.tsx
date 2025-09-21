@@ -1,25 +1,24 @@
 import React, { useEffect } from 'react'
 
-import { asyncPipe, CancellationError } from '../../../utils/asyncPipe'
-import { SourceTransaction } from '../../../types'
-
-import { useMessages } from '../../../hooks'
+import { useMessages } from '../../hooks'
+import { SourceTransaction } from '../../types'
+import { useStore } from '../../context/StoreContext'
+import { asyncPipe, CancellationError } from '../../utils'
 import {
     loadExchangeRates,
     toSystemTransactions,
     addToDB,
     validate,
-} from '../pipeline'
-import { useStore } from '../../../context/StoreContext'
+} from './pipeline'
 
-interface ResultsRendererProps {
+interface UploadResultsRendererProps {
     bankId: string
     sourceTransactions: SourceTransaction[]
 }
 
 const ERROR_KEYWORD = 'Error'
 
-export const ResultsRenderer: React.FC<ResultsRendererProps> = ({
+export const UploadResultsRenderer: React.FC<UploadResultsRendererProps> = ({
     bankId,
     sourceTransactions,
 }) => {
@@ -93,4 +92,4 @@ export const ResultsRenderer: React.FC<ResultsRendererProps> = ({
     )
 }
 
-export default ResultsRenderer
+export default UploadResultsRenderer

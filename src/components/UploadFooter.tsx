@@ -2,14 +2,14 @@ import React from 'react'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 
-interface FooterProps {
+interface UploadFooterProps {
     onBack: () => void
     isBackDisabled: boolean
     onNext: () => void
     isNextDisabled: boolean
 }
 
-export const Footer: React.FC<FooterProps> = ({
+export const UploadFooter: React.FC<UploadFooterProps> = ({
     onBack,
     isBackDisabled,
     onNext,

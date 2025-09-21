@@ -71,13 +71,6 @@ export const UploadPage: React.FC<UploadPageProps> = ({ uploadData }) => {
 
     return (
         <Stack spacing={2} maxWidth={600}>
-            <Typography variant="h4" component="h2" gutterBottom>
-                PrivatBank
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 3 }} color="text.secondary">
-                Upload your PrivatBank statement file here.
-            </Typography>
-
             <ToggleButtonGroup
                 exclusive
                 size="small"
@@ -91,7 +84,7 @@ export const UploadPage: React.FC<UploadPageProps> = ({ uploadData }) => {
                 <ToggleButton value="business">Business</ToggleButton>
             </ToggleButtonGroup>
 
-            <Box sx={{ mb: 3 }}>
+            <Box>
                 <Button
                     component="label"
                     variant="outlined"
