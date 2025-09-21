@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
 
 import {
     PageLayout,
     BankSelector,
     UploadResultsRenderer,
-    UploadFooter,
+    UploadStepperControls,
     CustomStepper,
 } from '../components'
 import { bankProvider } from '../plugins'
@@ -60,13 +61,8 @@ export const UploadPage: React.FC = () => {
             title={
                 activeStep === 0 ? 'Upload' : bankProvider.getLabelById(bankId)
             }
-        >
-            <Box sx={{ width: '100%', mt: 2 }}>
-                <CustomStepper activeStep={activeStep} steps={STEPS} />
-
-                <Box sx={{ mt: 4, ml: 2 }}>{renderStepContent(activeStep)}</Box>
-
-                <UploadFooter
+            header={
+                <UploadStepperControls
                     onBack={() => {
                         setData(null)
                         handleBack()
@@ -78,6 +74,12 @@ export const UploadPage: React.FC = () => {
                         (activeStep === 1 && !data)
                     }
                 />
+            }
+        >
+            <Box sx={{ width: '100%', mt: 2 }}>
+                <CustomStepper activeStep={activeStep} steps={STEPS} />
+
+                <Box sx={{ mt: 4, ml: 2 }}>{renderStepContent(activeStep)}</Box>
             </Box>
         </PageLayout>
     )

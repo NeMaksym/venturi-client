@@ -1,6 +1,6 @@
 import React from 'react'
-import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
+import Stack from '@mui/material/Stack'
 
 interface UploadFooterProps {
     onBack: () => void
@@ -9,21 +9,14 @@ interface UploadFooterProps {
     isNextDisabled: boolean
 }
 
-export const UploadFooter: React.FC<UploadFooterProps> = ({
+export const UploadStepperControls: React.FC<UploadFooterProps> = ({
     onBack,
     isBackDisabled,
     onNext,
     isNextDisabled,
 }) => {
-    const sx = {
-        display: 'flex',
-        justifyContent: 'space-between',
-        mt: 4,
-        px: 2,
-    }
-
     return (
-        <Box sx={sx}>
+        <Stack direction="row" spacing={2}>
             <Button
                 variant="outlined"
                 onClick={onBack}
@@ -38,6 +31,6 @@ export const UploadFooter: React.FC<UploadFooterProps> = ({
             >
                 Next
             </Button>
-        </Box>
+        </Stack>
     )
 }
