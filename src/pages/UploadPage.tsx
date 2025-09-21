@@ -4,7 +4,7 @@ import Button from '@mui/material/Button'
 
 import {
     PageLayout,
-    BankSelector,
+    BankCards,
     UploadResultsRenderer,
     UploadStepperControls,
     CustomStepper,
@@ -27,11 +27,10 @@ export const UploadPage: React.FC = () => {
     const renderStepContent = (step: number) => {
         switch (step) {
             case 0:
-                // TODO: Cards with icons instead of selector
                 return (
-                    <BankSelector
+                    <BankCards
                         value={bankId}
-                        onChange={(value) => setBankId(value)}
+                        onClick={(value) => setBankId(value)}
                         options={bankProvider.labelOptions}
                     />
                 )
