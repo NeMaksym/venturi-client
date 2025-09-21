@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 
 import { asyncPipe, CancellationError } from '../../../utils/asyncPipe'
-import { Bank, SourceTransaction } from '../../../types'
+import { SourceTransaction } from '../../../types'
 
 import { useMessages } from '../../../hooks'
 import {
@@ -13,14 +13,14 @@ import {
 import { useStore } from '../../../context/StoreContext'
 
 interface ResultsRendererProps {
-    bank: Bank
+    bankId: string
     sourceTransactions: SourceTransaction[]
 }
 
 const ERROR_KEYWORD = 'Error'
 
 export const ResultsRenderer: React.FC<ResultsRendererProps> = ({
-    bank,
+    bankId,
     sourceTransactions,
 }) => {
     const { expenseStore, incomeStore } = useStore()
@@ -34,7 +34,7 @@ export const ResultsRenderer: React.FC<ResultsRendererProps> = ({
             {
                 sourceTransactions,
                 addMessage,
-                bank,
+                bankId,
                 expenseStore,
                 incomeStore,
             },

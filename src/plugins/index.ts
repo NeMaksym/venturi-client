@@ -1,11 +1,12 @@
-import { Bank, BankPlugin } from '../types'
+import { bankProvider } from './bankProvider'
 
-import { monobankPlugin } from './monobank'
-import { privatBankPlugin } from './privatBank'
-import { privatBankBusinessPlugin } from './privatBankBusiness'
+import { monobankManifest } from './monobank'
+import { privatBankManifest } from './privatBank'
+import { privatBankBusinessManifest } from './privatBankBusiness'
 
-export const plugins: Record<Bank, BankPlugin> = {
-    Monobank: monobankPlugin,
-    PrivatBank: privatBankPlugin,
-    PrivatBankBusiness: privatBankBusinessPlugin,
-} as const
+bankProvider
+    .add('hMDykC', monobankManifest)
+    .add('Hr09x8', privatBankManifest)
+    .add('bLZNWi', privatBankBusinessManifest)
+
+export * from './bankProvider'

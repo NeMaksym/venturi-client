@@ -1,11 +1,11 @@
 import { AddMessage } from '../../../hooks'
-import { Bank, SourceTransaction } from '../../../types'
+import { SourceTransaction } from '../../../types'
 import { RootStore } from '../../../stores'
 
 export interface PipelineInput {
     sourceTransactions: SourceTransaction[]
     addMessage: AddMessage
-    bank: Bank
+    bankId: string
     expenseStore: RootStore['expenseStore']
     incomeStore: RootStore['incomeStore']
 }

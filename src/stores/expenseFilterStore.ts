@@ -42,11 +42,6 @@ const getInitialEndDate = (): string => {
     }
 }
 
-interface Bank {
-    value: string
-    label: string
-}
-
 export class ExpenseFilterStore {
     root: RootStore
 
@@ -114,12 +109,12 @@ export class ExpenseFilterStore {
 
         return Array.from(uniqueBankAccounts)
             .map((bankAccountValue) => {
-                const { bank, accountValue } =
+                const { bankId, accountValue } =
                     fromBankAccountValue(bankAccountValue)
 
                 return {
                     value: bankAccountValue,
-                    label: `${bank} ${accountValue}`,
+                    label: `${bankId} ${accountValue}`,
                 }
             })
             .sort((a, b) => a.label.localeCompare(b.label))

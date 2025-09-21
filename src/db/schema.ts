@@ -19,7 +19,7 @@ export interface VenturiDB extends DBSchema {
         value: SystemTransaction
         indexes: {
             time: number
-            bank: string
+            bankId: string
             category: string
             labels: string
         }
@@ -30,7 +30,7 @@ export interface VenturiDB extends DBSchema {
         indexes: {
             parentId: string
             time: number
-            bank: string
+            bankId: string
             category: string
             labels: string
         }
@@ -44,7 +44,7 @@ export interface VenturiDB extends DBSchema {
         value: SystemTransaction
         indexes: {
             time: number
-            bank: string
+            bankId: string
             category: string
             labels: string
         }

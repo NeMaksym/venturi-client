@@ -1,8 +1,8 @@
-import { BankPlugin } from '../../types'
-import { Uploader } from './components/Uploader'
+import { BankManifest } from '../../types'
+import { UploadPage } from './components/UploadPage'
 
-export const monobankPlugin: BankPlugin = {
+export const monobankManifest: BankManifest = {
     country: 'ua',
     label: 'Monobank',
-    Uploader,
+    UploadPage,
 }

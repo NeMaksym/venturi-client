@@ -1,6 +1,6 @@
+import { currency } from '../../../utils'
 import { SourceTransaction, SystemTransaction } from '../../../types'
 import { encodeKey, LoadExchangeRatesDTO } from './loadExchangeRates'
-import { currency } from '../../../utils/currency'
 
 const REFERENCE_CURRENCY_CODE = currency.usdNumCode
 
@@ -13,7 +13,7 @@ type ToSystemTransactions = (
 ) => ToSystemTransactionsDTO
 
 export const toSystemTransactions: ToSystemTransactions = (input) => {
-    const { sourceTransactions, bank, exchangeRatesMap, addMessage } = input
+    const { sourceTransactions, bankId, exchangeRatesMap, addMessage } = input
 
     addMessage('Adding reference amount to transactions...')
 
@@ -28,7 +28,7 @@ export const toSystemTransactions: ToSystemTransactions = (input) => {
         return {
             ...transaction,
             id: crypto.randomUUID(),
-            bank,
+            bankId,
             referenceAmount,
             referenceCurrencyCode: REFERENCE_CURRENCY_CODE,
             category: '',

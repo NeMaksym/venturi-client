@@ -58,7 +58,7 @@ export class IncomeService {
 
             return transactionsAtSameTime.some(
                 (dbTransaction) =>
-                    dbTransaction.bank === transaction.bank &&
+                    dbTransaction.bankId === transaction.bankId &&
                     dbTransaction.amount === transaction.amount
             )
         } catch (error) {

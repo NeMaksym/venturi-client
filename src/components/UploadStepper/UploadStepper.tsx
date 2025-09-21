@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import Box from '@mui/material/Box'
 
+import { bankProvider } from '../../plugins'
+import { SourceTransaction } from '../../types'
 import { Header, Footer, BankSelector, ResultsRenderer } from './components'
-import { Bank, SourceTransaction } from '../../types'
-import { plugins } from '../../plugins'
 
 interface UploadStepperProps {
     onComplete?: () => void
@@ -11,19 +11,14 @@ interface UploadStepperProps {
 
 const STEPS = ['Select Bank', 'Provide Data', 'Results']
 
-const BANK_OPTIONS: { value: string; label: string }[] = Object.entries(
-    plugins
-).map(([key, plugin]) => ({
-    value: key,
-    label: plugin.label,
-}))
-
 export const UploadStepper: React.FC<UploadStepperProps> = () => {
     const [activeStep, setActiveStep] = useState<number>(0)
     const handleNext = () => setActiveStep((prevStep) => prevStep + 1)
     const handleBack = () => setActiveStep((prevStep) => prevStep - 1)
 
-    const [bank, setBank] = useState<Bank>('PrivatBank')
+    const [bankId, setBankId] = useState<string>(
+        bankProvider.labelOptions[0]?.value ?? ''
+    )
     const [data, setData] = useState<SourceTransaction[] | null>(null)
 
     const renderStepContent = (step: number) => {
@@ -32,23 +27,23 @@ export const UploadStepper: React.FC<UploadStepperProps> = () => {
                 // TODO: Cards with icons instead of selector
                 return (
                     <BankSelector
-                        value={bank}
-                        onChange={(value) => setBank(value as Bank)}
-                        options={BANK_OPTIONS}
+                        value={bankId}
+                        onChange={(value) => setBankId(value)}
+                        options={bankProvider.labelOptions}
                     />
                 )
             case 1: {
                 // TODO: Create layout page for uploader. Plugin should provide only the upload logic.
                 // And layout should be responsible for shared elements (header, button, mb bank/country icons)
-                const UploaderComponent = plugins[bank].Uploader
-                return (
+                const UploaderComponent = bankProvider.getUploadPageById(bankId)
+                return UploaderComponent ? (
                     <UploaderComponent uploadData={(data) => setData(data)} />
-                )
+                ) : null
             }
             case 2: {
                 return (
                     <ResultsRenderer
-                        bank={bank}
+                        bankId={bankId}
                         sourceTransactions={data ?? []}
                     />
                 )

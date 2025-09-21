@@ -8,7 +8,7 @@ const initializeDB = (db: IDBPDatabase<VenturiDB>) => {
         keyPath: 'id',
     })
     expensesStore.createIndex('time', 'time')
-    expensesStore.createIndex('bank', 'bank')
+    expensesStore.createIndex('bankId', 'bankId')
     expensesStore.createIndex('category', 'category')
     expensesStore.createIndex('labels', 'labels', {
         multiEntry: true,
@@ -19,7 +19,7 @@ const initializeDB = (db: IDBPDatabase<VenturiDB>) => {
     })
     subExpensesStore.createIndex('parentId', 'parentId')
     subExpensesStore.createIndex('time', 'time')
-    subExpensesStore.createIndex('bank', 'bank')
+    subExpensesStore.createIndex('bankId', 'bankId')
     subExpensesStore.createIndex('category', 'category')
     subExpensesStore.createIndex('labels', 'labels', {
         multiEntry: true,
@@ -35,7 +35,7 @@ const initializeDB = (db: IDBPDatabase<VenturiDB>) => {
         keyPath: 'id',
     })
     incomesStore.createIndex('time', 'time')
-    incomesStore.createIndex('bank', 'bank')
+    incomesStore.createIndex('bankId', 'bankId')
     incomesStore.createIndex('category', 'category')
     incomesStore.createIndex('labels', 'labels', {
         multiEntry: true,

@@ -15,18 +15,18 @@ function getAccountValue(transaction: SystemTransaction): string {
 const DELIMITER = ':::'
 
 export function getBankAccountValue(transaction: SystemTransaction): string {
-    return `${transaction.bank}${DELIMITER}${getAccountValue(transaction)}`
+    return `${transaction.bankId}${DELIMITER}${getAccountValue(transaction)}`
 }
 
 export function fromBankAccountValue(bankAccountValue: string): {
-    bank: string
+    bankId: string
     accountValue: string
 } {
-    const [bank, accountValue] = bankAccountValue.split(DELIMITER)
+    const [bankId, accountValue] = bankAccountValue.split(DELIMITER)
 
-    if (!bank || !accountValue) {
+    if (!bankId || !accountValue) {
         throw new Error('Invalid bank account value')
     }
 
-    return { bank, accountValue }
+    return { bankId, accountValue }
 }

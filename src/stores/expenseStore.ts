@@ -151,7 +151,7 @@ export class ExpenseStore {
                     'description',
                     'currencyCode',
                     'referenceCurrencyCode',
-                    'bank',
+                    'bankId',
                     'account',
                     'card',
                     'category',

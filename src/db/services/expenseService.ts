@@ -55,7 +55,7 @@ export class ExpenseService {
             const expensesAtSameTime = await timeIndex.getAll(expense.time)
             return expensesAtSameTime.some(
                 (dbExpense) =>
-                    dbExpense.bank === expense.bank &&
+                    dbExpense.bankId === expense.bankId &&
                     dbExpense.amount === expense.amount
             )
         } catch (error) {

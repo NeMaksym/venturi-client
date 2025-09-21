@@ -1,9 +1,4 @@
 /**
- * Supported bank types in the system.
- */
-export type Bank = 'Monobank' | 'PrivatBank' | 'PrivatBankBusiness'
-
-/**
  * Represents a category in the system.
  * @interface Category
  * @property {string} id - Unique identifier for the category
@@ -75,7 +70,7 @@ export interface SourceTransaction {
  * @interface SystemTransaction
  * @extends SourceTransaction
  * @property {string} id - Unique identifier for the transaction
- * @property {Bank} bank - The bank that originated this transaction
+ * @property {string} bankId - The bank that originated this transaction
  * @property {number} referenceAmount - Reference amount in the smallest currency unit for comparison
  * @property {number} referenceCurrencyCode - Numerical code representing the reference currency
  * @property {Category['id'] | ''} category - System-assigned category for the transaction, empty string if uncategorized
@@ -99,7 +94,7 @@ export interface SystemTransaction
         | 'hold'
     > {
     id: string
-    bank: Bank
+    bankId: string
     referenceAmount: number
     referenceCurrencyCode: number
     category: Category['id'] | ''
@@ -125,7 +120,7 @@ export interface SystemSubTransaction
         | 'currencyCode'
         | 'account'
         | 'card'
-        | 'bank'
+        | 'bankId'
         | 'referenceAmount'
         | 'referenceCurrencyCode'
         | 'category'
@@ -135,29 +130,4 @@ export interface SystemSubTransaction
         | 'comment'
     > {
     parentId: string
-}
-
-/**
- * Props interface for uploader components.
- * @interface UploaderProps
- * @property {function} uploadData - Callback function to handle uploaded transaction data
- * @property {SourceTransaction[]} uploadData.data - Array of source transactions to upload
- */
-export interface UploaderProps {
-    uploadData: (data: SourceTransaction[]) => void
-}
-
-// TODO: Add bank icon
-// TODO: Add .md upload instruction
-/**
- * Represents a bank plugin configuration for the system.
- * @interface BankPlugin
- * @property {string} country - Country code where the bank operates (ISO 3166-1 alpha-2 )
- * @property {string} label - Human-readable name of the bank
- * @property {React.ComponentType<UploaderProps>} Uploader - React component for handling file uploads for this bank
- */
-export interface BankPlugin {
-    country: string
-    label: string
-    Uploader: React.ComponentType<UploaderProps>
 }

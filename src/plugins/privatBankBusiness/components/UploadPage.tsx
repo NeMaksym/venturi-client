@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button'
+import Box from '@mui/material/Box'
 import CloudUpload from '@mui/icons-material/CloudUpload'
 import { styled } from '@mui/system'
 
-import { UploaderProps } from '../../../types'
+import { UploadPageProps } from '../../../types'
 import { parsePrivateBankStatement } from '../utils/statementParser'
 
 const VisuallyHiddenInput = styled('input')({
@@ -30,7 +30,7 @@ const getSelectedFile = (event: React.ChangeEvent<HTMLInputElement>): File => {
     return selectedFile
 }
 
-export const Uploader: React.FC<UploaderProps> = ({ uploadData }) => {
+export const UploadPage: React.FC<UploadPageProps> = ({ uploadData }) => {
     const [file, setFile] = useState<File | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(false)
@@ -64,10 +64,10 @@ export const Uploader: React.FC<UploaderProps> = ({ uploadData }) => {
     return (
         <Box sx={{ maxWidth: 600 }}>
             <Typography variant="h4" component="h2" gutterBottom>
-                PrivatBank Statement Uploader
+                PrivatBank Business
             </Typography>
             <Typography variant="body1" sx={{ mb: 3 }} color="text.secondary">
-                Upload your PrivatBank statement file here.
+                Upload your PrivatBank Business statement file here.
             </Typography>
 
             <Box sx={{ mb: 3 }}>
