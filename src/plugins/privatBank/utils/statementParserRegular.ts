@@ -3,48 +3,14 @@ import cc from 'currency-codes'
 
 import type { SourceTransaction } from '../../../types'
 
-const HEADER_ROWS_COUNT = 5
-const REQUIRED_COLUMNS_COUNT = 11
-
-class PrivatBankStatementHeader {
-    private headerRow: Row
-
-    constructor(headerRow: Row | undefined) {
-        if (!headerRow || !headerRow[0]) {
-            throw new Error('Header row is missing or empty')
-        }
-
-        this.headerRow = headerRow
-    }
-
-    private get headerText(): string {
-        const headerText = this.headerRow[0]
-
-        if (typeof headerText !== 'string' || !headerText.length) {
-            throw new Error('Header row does not contain valid header text')
-        }
-
-        return headerText
-    }
-
-    public extractIban(): string {
-        const ibanRegex = /[A-Z]{2}\d{2}[A-Z0-9]+/
-        const match = this.headerText.match(ibanRegex)
-
-        if (!match) {
-            throw new Error('IBAN not found in header')
-        }
-
-        return match[0]
-    }
-}
+const HEADER_ROWS_COUNT = 2
+const REQUIRED_COLUMNS_COUNT = 10
 
 class PrivateBankStatementRow {
     private row: Row
     private rowIndex: number
-    private iban: string
 
-    constructor(row: Row, rowIndex: number, iban: string) {
+    constructor(row: Row, rowIndex: number) {
         if (row.length < REQUIRED_COLUMNS_COUNT) {
             throw new Error(
                 `Row ${rowIndex}: Expected ${REQUIRED_COLUMNS_COUNT} columns, got ${row.length}`
@@ -53,31 +19,46 @@ class PrivateBankStatementRow {
 
         this.rowIndex = rowIndex
         this.row = row
-        this.iban = iban
     }
 
-    private get date(): string {
-        const date = this.row[1]
+    private get dateTime(): string {
+        const dateTime = this.row[0]
 
-        if (typeof date !== 'string' || !date.length) {
+        if (typeof dateTime !== 'string' || !dateTime.length) {
             throw new Error(`Row ${this.rowIndex} has invalid date value`)
         }
 
-        return date
+        return dateTime
     }
 
-    private get time(): string {
-        const time = this.row[2]
+    private get category(): string {
+        const category = this.row[1]
 
-        if (typeof time !== 'string' || !time.length) {
-            throw new Error(`Row ${this.rowIndex} has invalid time value`)
+        if (typeof category !== 'string' || !category.length) {
+            throw new Error(`Row ${this.rowIndex} has invalid category value`)
         }
 
-        return time
+        return category
+    }
+
+    private get maskedPan(): string {
+        let maskedPan = this.row[2]
+
+        if (typeof maskedPan !== 'string') {
+            throw new Error(`Row ${this.rowIndex} has invalid card value`)
+        }
+
+        maskedPan = maskedPan.replace(/\s+/g, '')
+
+        if (maskedPan.length < 16) {
+            throw new Error(`Row ${this.rowIndex} has invalid card value`)
+        }
+
+        return maskedPan
     }
 
     private get description(): string {
-        const description = this.row[5]
+        const description = this.row[3]
 
         if (typeof description !== 'string' || !description.length) {
             throw new Error(
@@ -89,7 +70,7 @@ class PrivateBankStatementRow {
     }
 
     private get amount(): number {
-        const amount = this.row[3]
+        const amount = this.row[4]
 
         if (typeof amount !== 'number') {
             throw new Error(`Row ${this.rowIndex} has invalid amount value`)
@@ -99,7 +80,7 @@ class PrivateBankStatementRow {
     }
 
     private get currency(): string {
-        const currency = this.row[4]
+        const currency = this.row[5]
 
         if (typeof currency !== 'string' || !currency.length) {
             throw new Error(`Row ${this.rowIndex} has invalid currency value`)
@@ -108,17 +89,47 @@ class PrivateBankStatementRow {
         return currency
     }
 
+    private get operationAmount(): number {
+        const operationAmount = this.row[6]
+
+        if (typeof operationAmount !== 'number') {
+            throw new Error(
+                `Row ${this.rowIndex} has invalid operation amount value`
+            )
+        }
+
+        return operationAmount
+    }
+
+    private get operationCurrency(): string {
+        const operationCurrency = this.row[7]
+
+        if (
+            typeof operationCurrency !== 'string' ||
+            !operationCurrency.length
+        ) {
+            throw new Error(
+                `Row ${this.rowIndex} has invalid operation currency value`
+            )
+        }
+
+        return operationCurrency
+    }
+
+    // Data-time isn't in UTC. Likely it's in local time. May affect the duplicate find logic (because it uses time as one of parameters)
+    // TODO: Think how to address via UX
     private getTimestamp(): number {
-        const datePart = this.date
-        const timePart = this.time
+        const [datePart, timePart] = this.dateTime.split(' ')
+
+        if (!datePart || !timePart) {
+            throw new Error(`Row ${this.rowIndex} has invalid date value`)
+        }
 
         const [day, month, year] = datePart.split('.')
         const [hours, minutes, seconds] = timePart.split(':')
 
         if (!day || !month || !year || !hours || !minutes || !seconds) {
-            throw new Error(
-                `Row ${this.rowIndex} has invalid date or time format`
-            )
+            throw new Error(`Row ${this.rowIndex} has invalid date value`)
         }
 
         return new Date(
@@ -153,15 +164,19 @@ class PrivateBankStatementRow {
             description: this.description.trim(),
             amount: this.toSmallestUnit(this.amount),
             currencyCode: this.toCurrencyCodeNumber(this.currency),
-            account: {
-                type: 'iban',
-                value: this.iban,
+            operation: {
+                amount: this.toSmallestUnit(this.operationAmount),
+                currencyCode: this.toCurrencyCodeNumber(this.operationCurrency),
+            },
+            card: {
+                type: 'lastFour',
+                value: this.maskedPan.slice(-4),
             },
         }
     }
 }
 
-export const parsePrivateBankStatement = async (
+export const parsePrivateBankRegularStatement = async (
     file: File
 ): Promise<SourceTransaction[]> => {
     try {
@@ -175,19 +190,11 @@ export const parsePrivateBankStatement = async (
             )
         }
 
-        const headerRow = rows[1]
-        const header = new PrivatBankStatementHeader(headerRow)
-        const iban = header.extractIban()
-
         const dataRows = rows.slice(HEADER_ROWS_COUNT)
 
         return dataRows.map((row, index) => {
             const rowIndex = index + HEADER_ROWS_COUNT + 1
-            const statementRow = new PrivateBankStatementRow(
-                row,
-                rowIndex,
-                iban
-            )
+            const statementRow = new PrivateBankStatementRow(row, rowIndex)
             return statementRow.transaction
         })
     } catch (error) {

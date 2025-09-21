@@ -3,10 +3,14 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import CloudUpload from '@mui/icons-material/CloudUpload'
+import ToggleButton from '@mui/material/ToggleButton'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import { styled } from '@mui/system'
+import { Stack } from '@mui/material'
 
 import { UploadPageProps } from '../../../types'
-import { parsePrivateBankStatement } from '../utils/statementParser'
+import { parsePrivateBankRegularStatement } from '../utils/statementParserRegular'
+import { parsePrivateBankBusinessStatement } from '../utils/statementParserBusiness'
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -34,6 +38,7 @@ export const UploadPage: React.FC<UploadPageProps> = ({ uploadData }) => {
     const [file, setFile] = useState<File | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(false)
+    const [profile, setProfile] = useState<'regular' | 'business'>('regular')
 
     const handleFileChange = async (
         event: React.ChangeEvent<HTMLInputElement>
@@ -47,7 +52,10 @@ export const UploadPage: React.FC<UploadPageProps> = ({ uploadData }) => {
 
             setIsLoading(true)
 
-            const transactions = await parsePrivateBankStatement(selectedFile)
+            const transactions =
+                profile === 'business'
+                    ? await parsePrivateBankBusinessStatement(selectedFile)
+                    : await parsePrivateBankRegularStatement(selectedFile)
 
             uploadData(transactions)
         } catch (error) {
@@ -62,13 +70,26 @@ export const UploadPage: React.FC<UploadPageProps> = ({ uploadData }) => {
     }
 
     return (
-        <Box sx={{ maxWidth: 600 }}>
+        <Stack spacing={2} maxWidth={600}>
             <Typography variant="h4" component="h2" gutterBottom>
-                PrivatBank Statement Uploader
+                PrivatBank
             </Typography>
             <Typography variant="body1" sx={{ mb: 3 }} color="text.secondary">
                 Upload your PrivatBank statement file here.
             </Typography>
+
+            <ToggleButtonGroup
+                exclusive
+                size="small"
+                value={profile}
+                onChange={(event, next) => {
+                    if (next) setProfile(next)
+                }}
+                sx={{ mb: 2 }}
+            >
+                <ToggleButton value="regular">Regular</ToggleButton>
+                <ToggleButton value="business">Business</ToggleButton>
+            </ToggleButtonGroup>
 
             <Box sx={{ mb: 3 }}>
                 <Button
@@ -103,6 +124,6 @@ export const UploadPage: React.FC<UploadPageProps> = ({ uploadData }) => {
                     </Typography>
                 )}
             </Box>
-        </Box>
+        </Stack>
     )
 }
