@@ -1,12 +1,12 @@
 import { SystemTransaction } from '../types'
 
-function getAccountValue(transaction: SystemTransaction): string {
-    if ('account' in transaction) {
-        return transaction.account.value
+function getSourceValue(transaction: SystemTransaction): string {
+    if ('card' in transaction) {
+        return `**** ${transaction.card.value}`
     }
 
-    if ('card' in transaction) {
-        return transaction.card.value
+    if ('account' in transaction) {
+        return transaction.account.value
     }
 
     throw new Error('Each transaction should have account and/or card')
@@ -14,19 +14,21 @@ function getAccountValue(transaction: SystemTransaction): string {
 
 const DELIMITER = ':::'
 
-export function getBankAccountValue(transaction: SystemTransaction): string {
-    return `${transaction.bankId}${DELIMITER}${getAccountValue(transaction)}`
+export function getTransactionSourceValue(
+    transaction: SystemTransaction
+): string {
+    return `${transaction.bankId}${DELIMITER}${getSourceValue(transaction)}`
 }
 
-export function fromBankAccountValue(bankAccountValue: string): {
+export function fromTransactionSourceValue(transactionSourceValue: string): {
     bankId: string
-    accountValue: string
+    sourceValue: string
 } {
-    const [bankId, accountValue] = bankAccountValue.split(DELIMITER)
+    const [bankId, sourceValue] = transactionSourceValue.split(DELIMITER)
 
-    if (!bankId || !accountValue) {
-        throw new Error('Invalid bank account value')
+    if (!bankId || !sourceValue) {
+        throw new Error('Invalid transaction source value')
     }
 
-    return { bankId, accountValue }
+    return { bankId, sourceValue }
 }

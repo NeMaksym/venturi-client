@@ -1,6 +1,7 @@
 import { makeAutoObservable, reaction } from 'mobx'
 import { RootStore } from './rootStore'
-import { fromBankAccountValue, getBankAccountValue } from '../utils'
+import { fromTransactionSourceValue, getTransactionSourceValue } from '../utils'
+import { bankProvider } from '../plugins'
 
 export const STORAGE_KEYS = {
     START_DATE: 'filter-start-date',
@@ -47,7 +48,7 @@ export class ExpenseFilterStore {
 
     startDate = ''
     endDate = ''
-    bankAccounts: string[] = []
+    sources: string[] = []
     categories: string[] = []
     labels: string[] = []
 
@@ -94,8 +95,8 @@ export class ExpenseFilterStore {
         return new Date(this.endDate + 'T23:59:59').getTime()
     }
 
-    get bankAccountOptions() {
-        const uniqueBankAccounts = new Set<string>()
+    get sourceOptions() {
+        const uniqueSources = new Set<string>()
 
         const allTransactions = [
             ...this.root.expenseStore.expenses,
@@ -103,18 +104,21 @@ export class ExpenseFilterStore {
         ]
 
         allTransactions.forEach((transaction) => {
-            const accountValue = getBankAccountValue(transaction)
-            uniqueBankAccounts.add(accountValue)
+            const sourceValue = getTransactionSourceValue(transaction)
+            uniqueSources.add(sourceValue)
         })
 
-        return Array.from(uniqueBankAccounts)
-            .map((bankAccountValue) => {
-                const { bankId, accountValue } =
-                    fromBankAccountValue(bankAccountValue)
+        return Array.from(uniqueSources)
+            .map((transactionSourceValue) => {
+                const { bankId, sourceValue } = fromTransactionSourceValue(
+                    transactionSourceValue
+                )
+
+                const bankLabel = bankProvider.getLabelById(bankId)
 
                 return {
-                    value: bankAccountValue,
-                    label: `${bankId} ${accountValue}`,
+                    value: transactionSourceValue,
+                    label: `${bankLabel} ${sourceValue}`,
                 }
             })
             .sort((a, b) => a.label.localeCompare(b.label))
@@ -149,8 +153,8 @@ export class ExpenseFilterStore {
         this.endDate = endDate
     }
 
-    updateBankAccounts(bankAccounts: string[]) {
-        this.bankAccounts = bankAccounts
+    updateSource(sources: string[]) {
+        this.sources = sources
     }
 
     updateCategories(categories: string[]) {
