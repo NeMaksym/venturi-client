@@ -1,6 +1,6 @@
 import { DBProvider } from '../provider'
 import { Stores } from '../schema'
-import { SystemTransaction } from '../../types'
+import { RawSystemTransaction, SystemTransaction } from '../../types'
 import {
     currency,
     isIBAN,
@@ -45,7 +45,9 @@ export class IncomeService {
         }
     }
 
-    async transactionExists(transaction: SystemTransaction): Promise<boolean> {
+    async transactionExists(
+        transaction: SystemTransaction | RawSystemTransaction
+    ): Promise<boolean> {
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.INCOMES, 'readonly')
         const store = tx.objectStore(Stores.INCOMES)
@@ -67,16 +69,22 @@ export class IncomeService {
         }
     }
 
-    async addIncome(income: SystemTransaction): Promise<SystemTransaction> {
-        this.#validateIncome(income)
+    async addIncome(income: RawSystemTransaction): Promise<SystemTransaction> {
+        const now = Date.now()
+        const incomeWithTimestamps: SystemTransaction = {
+            ...income,
+            createdAt: now,
+            updatedAt: now,
+        }
+        this.#validateIncome(incomeWithTimestamps)
 
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.INCOMES, 'readwrite')
         const store = tx.objectStore(Stores.INCOMES)
 
         try {
-            await store.add(income)
-            return income
+            await store.add(incomeWithTimestamps)
+            return incomeWithTimestamps
         } catch (error) {
             console.error('Failed to add income:', error)
             throw error
@@ -131,15 +139,19 @@ export class IncomeService {
     }
 
     async updateIncome(income: SystemTransaction): Promise<SystemTransaction> {
-        this.#validateIncome(income)
+        const updatedIncome: SystemTransaction = {
+            ...income,
+            updatedAt: Date.now(),
+        }
+        this.#validateIncome(updatedIncome)
 
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.INCOMES, 'readwrite')
         const store = tx.objectStore(Stores.INCOMES)
 
         try {
-            await store.put(income)
-            return income
+            await store.put(updatedIncome)
+            return updatedIncome
         } catch (error) {
             console.error('Failed to update income:', error)
             throw error

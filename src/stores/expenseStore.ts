@@ -4,7 +4,11 @@ import { makeAutoObservable } from 'mobx'
 import { RootStore } from './rootStore'
 import { toSmallestUnit, timeDesc } from '../utils'
 import { ExpenseService, SubExpenseService } from '../db/services'
-import { SystemTransaction, SystemSubTransaction } from '../types'
+import {
+    SystemTransaction,
+    SystemSubTransaction,
+    RawSystemTransaction,
+} from '../types'
 
 type SubExpensesMap = Map<string, SystemSubTransaction[]>
 
@@ -18,7 +22,9 @@ export class ExpenseStore {
     expenses: SystemTransaction[] = []
     subExpenses: SystemSubTransaction[] = []
 
-    async expenseExists(expense: SystemTransaction): Promise<boolean> {
+    async expenseExists(
+        expense: SystemTransaction | RawSystemTransaction
+    ): Promise<boolean> {
         return await this.expenseService.expenseExists(expense)
     }
 
@@ -181,8 +187,10 @@ export class ExpenseStore {
         )
     }
 
-    *addExpense(expense: SystemTransaction) {
-        expense = yield this.expenseService.addExpense(expense)
+    *addExpense(rawExpense: RawSystemTransaction) {
+        const expense: SystemTransaction = yield this.expenseService.addExpense(
+            rawExpense
+        )
 
         this.expenses.push(expense)
     }

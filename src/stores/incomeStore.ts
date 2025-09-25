@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx'
 
 import { RootStore } from './rootStore'
 import { IncomeService } from '../db/services'
-import { SystemTransaction } from '../types'
+import { RawSystemTransaction, SystemTransaction } from '../types'
 
 export class IncomeStore {
     private readonly root: RootStore
@@ -12,7 +12,9 @@ export class IncomeStore {
     error: string | null = null
     incomes: SystemTransaction[] = []
 
-    async incomeExists(income: SystemTransaction): Promise<boolean> {
+    async incomeExists(
+        income: SystemTransaction | RawSystemTransaction
+    ): Promise<boolean> {
         return await this.incomeService.transactionExists(income)
     }
 
@@ -69,8 +71,10 @@ export class IncomeStore {
         this.incomes = this.incomes.filter((i) => i.id !== incomeId)
     }
 
-    *addIncome(income: SystemTransaction) {
-        income = yield this.incomeService.addIncome(income)
+    *addIncome(rawIncome: RawSystemTransaction) {
+        const income: SystemTransaction = yield this.incomeService.addIncome(
+            rawIncome
+        )
 
         this.incomes.push(income)
     }

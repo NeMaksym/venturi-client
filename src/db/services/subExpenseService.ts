@@ -1,6 +1,6 @@
 import { Stores } from '../schema'
 import { DBProvider } from '../provider'
-import { SystemSubTransaction } from '../../types'
+import { RawSystemSubTransaction, SystemSubTransaction } from '../../types'
 import {
     currency,
     isFourDigitString,
@@ -119,17 +119,23 @@ export class SubExpenseService {
     }
 
     async addSubExpense(
-        subExpense: SystemSubTransaction
+        subExpense: RawSystemSubTransaction
     ): Promise<SystemSubTransaction> {
-        this.#validateSubExpense(subExpense)
+        const now = Date.now()
+        const subExpenseWithTimestamps: SystemSubTransaction = {
+            ...subExpense,
+            createdAt: now,
+            updatedAt: now,
+        }
+        this.#validateSubExpense(subExpenseWithTimestamps)
 
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.SUB_EXPENSES, 'readwrite')
         const store = tx.objectStore(Stores.SUB_EXPENSES)
 
         try {
-            await store.add(subExpense)
-            return subExpense
+            await store.add(subExpenseWithTimestamps)
+            return subExpenseWithTimestamps
         } catch (error) {
             console.error('Failed to add sub-expense:', error)
             throw error
@@ -139,15 +145,19 @@ export class SubExpenseService {
     async updateSubExpense(
         subExpense: SystemSubTransaction
     ): Promise<SystemSubTransaction> {
-        this.#validateSubExpense(subExpense)
+        const updatedSubExpense: SystemSubTransaction = {
+            ...subExpense,
+            updatedAt: Date.now(),
+        }
+        this.#validateSubExpense(updatedSubExpense)
 
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.SUB_EXPENSES, 'readwrite')
         const store = tx.objectStore(Stores.SUB_EXPENSES)
 
         try {
-            await store.put(subExpense)
-            return subExpense
+            await store.put(updatedSubExpense)
+            return updatedSubExpense
         } catch (error) {
             console.error('Failed to update sub-expense:', error)
             throw error

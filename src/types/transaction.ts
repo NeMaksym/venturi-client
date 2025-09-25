@@ -77,6 +77,8 @@ export interface SourceTransaction {
  * @property {string[]} labels - Array of system-assigned labels or tags
  * @property {boolean} capitalized - Flag indicating if the transaction is capitalized
  * @property {boolean} hide - Flag indicating if the transaction is hidden
+ * @property {number} createdAt - Creation timestamp of the transaction in Unix milliseconds
+ * @property {number} updatedAt - Timestamp of the transaction last update in Unix milliseconds
  */
 export interface SystemTransaction
     extends Pick<
@@ -102,7 +104,14 @@ export interface SystemTransaction
     hide: boolean
     labels: string[]
     comment: string
+    createdAt: number
+    updatedAt: number
 }
+
+export type RawSystemTransaction = Omit<
+    SystemTransaction,
+    'createdAt' | 'updatedAt'
+>
 
 /**
  * Represents a sub-transaction of a system transaction.
@@ -128,6 +137,13 @@ export interface SystemSubTransaction
         | 'hide'
         | 'labels'
         | 'comment'
+        | 'createdAt'
+        | 'updatedAt'
     > {
     parentId: string
 }
+
+export type RawSystemSubTransaction = Omit<
+    SystemSubTransaction,
+    'createdAt' | 'updatedAt'
+>

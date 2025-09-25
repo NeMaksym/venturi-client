@@ -1,6 +1,6 @@
 import { Stores } from '../schema'
 import { DBProvider } from '../provider'
-import { SystemTransaction } from '../../types'
+import { RawSystemTransaction, SystemTransaction } from '../../types'
 import {
     currency,
     isFourDigitString,
@@ -45,7 +45,9 @@ export class ExpenseService {
         }
     }
 
-    async expenseExists(expense: SystemTransaction): Promise<boolean> {
+    async expenseExists(
+        expense: SystemTransaction | RawSystemTransaction
+    ): Promise<boolean> {
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSES, 'readonly')
         const store = tx.objectStore(Stores.EXPENSES)
@@ -127,16 +129,24 @@ export class ExpenseService {
         }
     }
 
-    async addExpense(expense: SystemTransaction): Promise<SystemTransaction> {
-        this.#validateExpense(expense)
+    async addExpense(
+        expense: RawSystemTransaction
+    ): Promise<SystemTransaction> {
+        const expenseWithTimestamps: SystemTransaction = {
+            ...expense,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+        }
+
+        this.#validateExpense(expenseWithTimestamps)
 
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSES, 'readwrite')
         const store = tx.objectStore(Stores.EXPENSES)
 
         try {
-            await store.add(expense)
-            return expense
+            await store.add(expenseWithTimestamps)
+            return expenseWithTimestamps
         } catch (error) {
             console.error('Failed to add expense:', error)
             throw error
@@ -146,15 +156,19 @@ export class ExpenseService {
     async updateExpense(
         expense: SystemTransaction
     ): Promise<SystemTransaction> {
-        this.#validateExpense(expense)
+        const updatedExpense: SystemTransaction = {
+            ...expense,
+            updatedAt: Date.now(),
+        }
+        this.#validateExpense(updatedExpense)
 
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.EXPENSES, 'readwrite')
         const store = tx.objectStore(Stores.EXPENSES)
 
         try {
-            await store.put(expense)
-            return expense
+            await store.put(updatedExpense)
+            return updatedExpense
         } catch (error) {
             console.error('Failed to update expense:', error)
             throw error

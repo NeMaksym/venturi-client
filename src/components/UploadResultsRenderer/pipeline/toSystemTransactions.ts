@@ -1,11 +1,11 @@
 import { currency } from '../../../utils'
-import { SourceTransaction, SystemTransaction } from '../../../types'
+import { RawSystemTransaction, SourceTransaction } from '../../../types'
 import { encodeKey, LoadExchangeRatesDTO } from './loadExchangeRates'
 
 const REFERENCE_CURRENCY_CODE = currency.usdNumCode
 
 export interface ToSystemTransactionsDTO extends LoadExchangeRatesDTO {
-    systemTransactions: SystemTransaction[]
+    systemTransactions: RawSystemTransaction[]
 }
 
 type ToSystemTransactions = (
