@@ -25,10 +25,14 @@ export const toSystemTransactions: ToSystemTransactions = (input) => {
                 ? Math.abs(transaction.amount)
                 : calculateRefAmount(transaction, exchangeRatesMap)
 
+        const type: RawSystemTransaction['type'] =
+            transaction.amount < 0 ? 'expense' : 'income'
+
         return {
             ...transaction,
             id: crypto.randomUUID(),
             bankId,
+            type,
             referenceAmount,
             referenceCurrencyCode: REFERENCE_CURRENCY_CODE,
             category: '',

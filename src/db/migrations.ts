@@ -4,15 +4,11 @@ import { VenturiDB, Stores } from './schema'
 import { seedDefaultCategories } from './seeds'
 
 const initializeDB = (db: IDBPDatabase<VenturiDB>) => {
-    const expensesStore = db.createObjectStore(Stores.EXPENSES, {
+    const transactionsStore = db.createObjectStore(Stores.TRANSACTIONS, {
         keyPath: 'id',
     })
-    expensesStore.createIndex('time', 'time')
-    expensesStore.createIndex('bankId', 'bankId')
-    expensesStore.createIndex('category', 'category')
-    expensesStore.createIndex('labels', 'labels', {
-        multiEntry: true,
-    })
+    transactionsStore.createIndex('time', 'time')
+    transactionsStore.createIndex('category', 'category')
 
     const subExpensesStore = db.createObjectStore(Stores.SUB_EXPENSES, {
         keyPath: 'id',
@@ -30,16 +26,6 @@ const initializeDB = (db: IDBPDatabase<VenturiDB>) => {
         { keyPath: 'id' }
     )
     seedDefaultCategories(expenseCategoriesStore)
-
-    const incomesStore = db.createObjectStore(Stores.INCOMES, {
-        keyPath: 'id',
-    })
-    incomesStore.createIndex('time', 'time')
-    incomesStore.createIndex('bankId', 'bankId')
-    incomesStore.createIndex('category', 'category')
-    incomesStore.createIndex('labels', 'labels', {
-        multiEntry: true,
-    })
 }
 
 export const migrations = [{ version: 1, upgrade: initializeDB }]

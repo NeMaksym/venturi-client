@@ -69,6 +69,7 @@ export interface SourceTransaction {
  * Represents a transaction with additional system-level metadata.
  * @interface SystemTransaction
  * @extends SourceTransaction
+ * @property {string} type - Transaction type
  * @property {string} id - Unique identifier for the transaction
  * @property {string} bankId - The bank that originated this transaction
  * @property {number} referenceAmount - Reference amount in the smallest currency unit for comparison
@@ -80,21 +81,21 @@ export interface SourceTransaction {
  * @property {number} createdAt - Creation timestamp of the transaction in Unix milliseconds
  * @property {number} updatedAt - Timestamp of the transaction last update in Unix milliseconds
  */
-export interface SystemTransaction
-    extends Pick<
-        SourceTransaction,
-        | 'originalId'
-        | 'time'
-        | 'description'
-        | 'amount'
-        | 'currencyCode'
-        | 'operation'
-        | 'account'
-        | 'card'
-        | 'comment'
-        | 'mcc'
-        | 'hold'
-    > {
+export interface SystemTransaction extends Pick<
+    SourceTransaction,
+    | 'originalId'
+    | 'time'
+    | 'description'
+    | 'amount'
+    | 'currencyCode'
+    | 'operation'
+    | 'account'
+    | 'card'
+    | 'comment'
+    | 'mcc'
+    | 'hold'
+> {
+    type: 'expense' | 'income'
     id: string
     bankId: string
     referenceAmount: number
@@ -119,27 +120,26 @@ export type RawSystemTransaction = Omit<
  * @extends SystemTransaction
  * @property {string} parentId - Unique identifier for the parent transaction
  */
-export interface SystemSubTransaction
-    extends Pick<
-        SystemTransaction,
-        | 'id'
-        | 'time'
-        | 'description'
-        | 'amount'
-        | 'currencyCode'
-        | 'account'
-        | 'card'
-        | 'bankId'
-        | 'referenceAmount'
-        | 'referenceCurrencyCode'
-        | 'category'
-        | 'capitalized'
-        | 'hide'
-        | 'labels'
-        | 'comment'
-        | 'createdAt'
-        | 'updatedAt'
-    > {
+export interface SystemSubTransaction extends Pick<
+    SystemTransaction,
+    | 'id'
+    | 'time'
+    | 'description'
+    | 'amount'
+    | 'currencyCode'
+    | 'account'
+    | 'card'
+    | 'bankId'
+    | 'referenceAmount'
+    | 'referenceCurrencyCode'
+    | 'category'
+    | 'capitalized'
+    | 'hide'
+    | 'labels'
+    | 'comment'
+    | 'createdAt'
+    | 'updatedAt'
+> {
     parentId: string
 }
 

@@ -98,10 +98,7 @@ export class ExpenseFilterStore {
     get sourceOptions() {
         const uniqueSources = new Set<string>()
 
-        const allTransactions = [
-            ...this.root.expenseStore.expenses,
-            ...this.root.expenseStore.subExpenses,
-        ]
+        const allTransactions = this.root.transactionStore.allExpenses
 
         allTransactions.forEach((transaction) => {
             const sourceValue = getTransactionSourceValue(transaction)
@@ -127,18 +124,16 @@ export class ExpenseFilterStore {
     get labelOptions() {
         const labelCount: Record<string, number> = {}
 
-        Promise.all([
-            this.root.expenseStore.expenses.forEach((expense) => {
-                expense.labels.forEach((label) => {
-                    labelCount[label] = (labelCount[label] || 0) + 1
-                })
-            }),
-            this.root.expenseStore.subExpenses.forEach((subExpense) => {
-                subExpense.labels.forEach((label) => {
-                    labelCount[label] = (labelCount[label] || 0) + 1
-                })
-            }),
-        ])
+        this.root.transactionStore.allExpenses.forEach((transaction) => {
+            transaction.labels.forEach((label) => {
+                labelCount[label] = (labelCount[label] || 0) + 1
+            })
+        })
+        this.root.transactionStore.subExpenses.forEach((subExpense) => {
+            subExpense.labels.forEach((label) => {
+                labelCount[label] = (labelCount[label] || 0) + 1
+            })
+        })
 
         return Object.entries(labelCount)
             .sort((a, b) => b[1] - a[1])

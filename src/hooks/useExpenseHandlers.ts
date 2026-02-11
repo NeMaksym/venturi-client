@@ -16,7 +16,7 @@ export interface ExpenseHandlers {
 }
 
 export function useExpenseHandlers(): ExpenseHandlers {
-    const { expenseStore } = useStore()
+    const { transactionStore } = useStore()
 
     return useMemo(
         () => ({
@@ -24,45 +24,75 @@ export function useExpenseHandlers(): ExpenseHandlers {
                 const payload = { comment }
 
                 subExpenseId
-                    ? expenseStore.updateSubExpenseField(subExpenseId, payload)
-                    : expenseStore.updateExpenseField(expenseId, payload)
+                    ? transactionStore.updateSubExpenseField(
+                          subExpenseId,
+                          payload
+                      )
+                    : transactionStore.updateTransactionField(
+                          expenseId,
+                          payload
+                      )
             },
             onCategoryChange: (expenseId, category, subExpenseId) => {
                 const payload = { category }
 
                 subExpenseId
-                    ? expenseStore.updateSubExpenseField(subExpenseId, payload)
-                    : expenseStore.updateExpenseField(expenseId, payload)
+                    ? transactionStore.updateSubExpenseField(
+                          subExpenseId,
+                          payload
+                      )
+                    : transactionStore.updateTransactionField(
+                          expenseId,
+                          payload
+                      )
             },
             onLabelChange: (expenseId, labels, subExpenseId) => {
                 const payload = { labels }
 
                 subExpenseId
-                    ? expenseStore.updateSubExpenseField(subExpenseId, payload)
-                    : expenseStore.updateExpenseField(expenseId, payload)
+                    ? transactionStore.updateSubExpenseField(
+                          subExpenseId,
+                          payload
+                      )
+                    : transactionStore.updateTransactionField(
+                          expenseId,
+                          payload
+                      )
             },
             onHideChange: (expenseId, hide, subExpenseId) => {
                 const payload = { hide }
 
                 subExpenseId
-                    ? expenseStore.updateSubExpenseField(subExpenseId, payload)
-                    : expenseStore.updateExpenseField(expenseId, payload)
+                    ? transactionStore.updateSubExpenseField(
+                          subExpenseId,
+                          payload
+                      )
+                    : transactionStore.updateTransactionField(
+                          expenseId,
+                          payload
+                      )
             },
             onCapitalizeChange: (expenseId, capitalized, subExpenseId) => {
                 const payload = { capitalized }
 
                 subExpenseId
-                    ? expenseStore.updateSubExpenseField(subExpenseId, payload)
-                    : expenseStore.updateExpenseField(expenseId, payload)
+                    ? transactionStore.updateSubExpenseField(
+                          subExpenseId,
+                          payload
+                      )
+                    : transactionStore.updateTransactionField(
+                          expenseId,
+                          payload
+                      )
             },
-            onDelete: expenseStore.delete,
-            onSubTransactionCreate: expenseStore.createSubTransaction,
+            onDelete: transactionStore.delete,
+            onSubTransactionCreate: transactionStore.createSubExpense,
         }),
         [
-            expenseStore.updateExpenseField,
-            expenseStore.updateSubExpenseField,
-            expenseStore.delete,
-            expenseStore.createSubTransaction,
+            transactionStore.updateTransactionField,
+            transactionStore.updateSubExpenseField,
+            transactionStore.delete,
+            transactionStore.createSubExpense,
         ]
     )
 }

@@ -1,22 +1,23 @@
 import { useMemo } from 'react'
-
 import { timeDesc, getTransactionSourceValue } from '../utils'
 import { RootStore } from '../stores'
 import { useStore } from '../context/StoreContext'
 import { SystemTransaction, SystemSubTransaction } from '../types'
 
 export function useExpenseTableRows() {
-    const { expenseStore, expenseFilterStore } = useStore()
+    const { transactionStore, expenseFilterStore } = useStore()
 
     return useMemo(() => {
         const result: (SystemTransaction | SystemSubTransaction)[] = []
 
-        expenseStore.expensesInDateRange
+        transactionStore.expensesInDateRange
             .slice()
             .sort(timeDesc)
             .forEach((expense) => {
                 const subExpenses =
-                    expenseStore.subExpensesInDateRangeMap.get(expense.id) || []
+                    transactionStore.subExpensesMapInDateRange.get(
+                        expense.id
+                    ) || []
 
                 if (shouldShowTransaction(expense, expenseFilterStore)) {
                     result.push(expenseToTableRow(expense, subExpenses))
@@ -37,8 +38,8 @@ export function useExpenseTableRows() {
 
         return result
     }, [
-        expenseStore.expensesInDateRange,
-        expenseStore.subExpensesInDateRangeMap,
+        transactionStore.expensesInDateRange,
+        transactionStore.subExpensesMapInDateRange,
         expenseFilterStore.sources,
         expenseFilterStore.categories,
         expenseFilterStore.labels,

@@ -4,7 +4,7 @@ import { CategoryList, PageLayout } from '../components'
 import { useStore } from '../context/StoreContext'
 
 export const ExpensesConfigPage: React.FC = () => {
-    const { expenseCategoryStore, expenseStore } = useStore()
+    const { expenseCategoryStore, transactionStore } = useStore()
 
     return (
         <PageLayout title="Configuration">
@@ -15,7 +15,7 @@ export const ExpensesConfigPage: React.FC = () => {
                     expenseCategoryStore.rename(id, newLabel)
                 }
                 onCategoryDelete={async (id) => {
-                    await expenseStore.resetCategory(id)
+                    await transactionStore.resetCategory(id)
                     await expenseCategoryStore.remove(id)
                 }}
             />

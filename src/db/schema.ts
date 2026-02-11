@@ -7,21 +7,18 @@ import type {
 } from '../types'
 
 export const Stores = {
-    EXPENSES: 'expenses',
+    TRANSACTIONS: 'transactions',
     SUB_EXPENSES: 'sub-expenses',
     EXPENSE_CATEGORIES: 'expense-categories',
-    INCOMES: 'incomes',
 } as const
 
 export interface VenturiDB extends DBSchema {
-    [Stores.EXPENSES]: {
+    [Stores.TRANSACTIONS]: {
         key: string
         value: SystemTransaction
         indexes: {
             time: number
-            bankId: string
             category: string
-            labels: string
         }
     }
     [Stores.SUB_EXPENSES]: {
@@ -38,15 +35,5 @@ export interface VenturiDB extends DBSchema {
     [Stores.EXPENSE_CATEGORIES]: {
         key: string
         value: Category
-    }
-    [Stores.INCOMES]: {
-        key: string
-        value: SystemTransaction
-        indexes: {
-            time: number
-            bankId: string
-            category: string
-            labels: string
-        }
     }
 }

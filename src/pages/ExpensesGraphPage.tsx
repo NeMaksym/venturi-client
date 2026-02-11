@@ -8,10 +8,10 @@ import { fromSmallestUnit } from '../utils/formatAmount'
 import { useStore } from '../context/StoreContext'
 
 const ExpensesGraphPage: React.FC = () => {
-    const { expenseCategoryStore, expenseStore } = useStore()
+    const { expenseCategoryStore, transactionStore } = useStore()
 
     const renderContent = () => {
-        if (expenseStore.loading) {
+        if (transactionStore.loading) {
             return (
                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                     <CircularProgress />
@@ -19,10 +19,10 @@ const ExpensesGraphPage: React.FC = () => {
             )
         }
 
-        if (expenseStore.error) {
+        if (transactionStore.error) {
             return (
                 <Alert severity="error">
-                    Error loading expense data: {expenseStore.error}
+                    Error loading expense data: {transactionStore.error}
                 </Alert>
             )
         }
@@ -30,30 +30,36 @@ const ExpensesGraphPage: React.FC = () => {
         return (
             <YearGraph
                 data={[
-                    ...expenseStore.expenses,
-                    ...expenseStore.subExpenses,
-                ].reduce((acc, expense) => {
-                    const category =
-                        expenseCategoryStore.categoriesMap[expense.category] ??
-                        'Uncategorized'
+                    ...transactionStore.allExpenses,
+                    ...transactionStore.subExpenses,
+                ].reduce(
+                    (acc, expense) => {
+                        const category =
+                            expenseCategoryStore.categoriesMap[
+                                expense.category
+                            ] ?? 'Uncategorized'
 
-                    if (!category) {
+                        if (!category) {
+                            return acc
+                        }
+
+                        if (acc[category] === undefined) {
+                            acc[category] = Array(12).fill(0)
+                        }
+
+                        const refAmount = fromSmallestUnit(
+                            expense.referenceAmount
+                        )
+                        const month = new Date(expense.time).getMonth()
+
+                        if (acc[category][month] !== undefined) {
+                            acc[category][month] += refAmount
+                        }
+
                         return acc
-                    }
-
-                    if (acc[category] === undefined) {
-                        acc[category] = Array(12).fill(0)
-                    }
-
-                    const refAmount = fromSmallestUnit(expense.referenceAmount)
-                    const month = new Date(expense.time).getMonth()
-
-                    if (acc[category][month] !== undefined) {
-                        acc[category][month] += refAmount
-                    }
-
-                    return acc
-                }, {} as Record<string, number[]>)}
+                    },
+                    {} as Record<string, number[]>
+                )}
             />
         )
     }

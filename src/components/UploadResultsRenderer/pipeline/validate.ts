@@ -6,8 +6,7 @@ export interface PipelineInput {
     sourceTransactions: SourceTransaction[]
     addMessage: AddMessage
     bankId: string
-    expenseStore: RootStore['expenseStore']
-    incomeStore: RootStore['incomeStore']
+    transactionStore: RootStore['transactionStore']
 }
 
 export function validate(input: PipelineInput): PipelineInput {

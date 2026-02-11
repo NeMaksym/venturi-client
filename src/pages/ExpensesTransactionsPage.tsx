@@ -15,7 +15,7 @@ import {
 } from '../hooks'
 
 export const ExpensesTransactionsPage: React.FC = () => {
-    const { expenseCategoryStore, expenseStore, expenseFilterStore } =
+    const { expenseCategoryStore, transactionStore, expenseFilterStore } =
         useStore()
 
     const handlers = useExpenseHandlers()
@@ -23,14 +23,14 @@ export const ExpensesTransactionsPage: React.FC = () => {
     const stats = useExpenseTableStats(rows)
 
     const renderContent = () => {
-        if (expenseStore.loading) {
+        if (transactionStore.loading) {
             return <Typography>Loading transactions...</Typography>
         }
 
-        if (expenseStore.error) {
+        if (transactionStore.error) {
             return (
                 <Typography color="error">
-                    Error: {expenseStore.error}
+                    Error: {transactionStore.error}
                 </Typography>
             )
         }

@@ -22,7 +22,7 @@ export const UploadResultsRenderer: React.FC<UploadResultsRendererProps> = ({
     bankId,
     sourceTransactions,
 }) => {
-    const { expenseStore, incomeStore } = useStore()
+    const { transactionStore } = useStore()
 
     const { messages, addMessage } = useMessages()
 
@@ -34,8 +34,7 @@ export const UploadResultsRenderer: React.FC<UploadResultsRendererProps> = ({
                 sourceTransactions,
                 addMessage,
                 bankId,
-                expenseStore,
-                incomeStore,
+                transactionStore,
             },
             validate,
             loadExchangeRates,
