@@ -13,6 +13,7 @@ import { SourceTransaction } from '../types'
 
 const STEPS = ['Select Bank', 'Provide Data', 'Results']
 
+// TODO: On last step show "Done" instead of "Next" and redirect to expenses page
 export const UploadPage: React.FC = () => {
     const [activeStep, setActiveStep] = useState<number>(0)
     const handleNext = () => setActiveStep((prevStep) => prevStep + 1)

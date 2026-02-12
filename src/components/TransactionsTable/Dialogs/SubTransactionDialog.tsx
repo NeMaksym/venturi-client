@@ -16,6 +16,7 @@ interface SubTransactionDialogProps {
     onCancel: () => void
 }
 
+// TODO: Block submit if input > maxAmount
 export const SubTransactionDialog: React.FC<SubTransactionDialogProps> = ({
     open,
     maxAmount,
