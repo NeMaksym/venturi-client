@@ -20,77 +20,21 @@ export function useExpenseHandlers(): ExpenseHandlers {
 
     return useMemo(
         () => ({
-            onCommentChange: (expenseId, comment, subExpenseId) => {
-                const payload = { comment }
-
-                subExpenseId
-                    ? transactionStore.updateSubExpenseField(
-                          subExpenseId,
-                          payload
-                      )
-                    : transactionStore.updateTransactionField(
-                          expenseId,
-                          payload
-                      )
-            },
-            onCategoryChange: (expenseId, category, subExpenseId) => {
-                const payload = { category }
-
-                subExpenseId
-                    ? transactionStore.updateSubExpenseField(
-                          subExpenseId,
-                          payload
-                      )
-                    : transactionStore.updateTransactionField(
-                          expenseId,
-                          payload
-                      )
-            },
-            onLabelChange: (expenseId, labels, subExpenseId) => {
-                const payload = { labels }
-
-                subExpenseId
-                    ? transactionStore.updateSubExpenseField(
-                          subExpenseId,
-                          payload
-                      )
-                    : transactionStore.updateTransactionField(
-                          expenseId,
-                          payload
-                      )
-            },
-            onHideChange: (expenseId, hide, subExpenseId) => {
-                const payload = { hide }
-
-                subExpenseId
-                    ? transactionStore.updateSubExpenseField(
-                          subExpenseId,
-                          payload
-                      )
-                    : transactionStore.updateTransactionField(
-                          expenseId,
-                          payload
-                      )
-            },
-            onCapitalizeChange: (expenseId, capitalized, subExpenseId) => {
-                const payload = { capitalized }
-
-                subExpenseId
-                    ? transactionStore.updateSubExpenseField(
-                          subExpenseId,
-                          payload
-                      )
-                    : transactionStore.updateTransactionField(
-                          expenseId,
-                          payload
-                      )
-            },
+            onCommentChange: (id, comment, subId) =>
+                transactionStore.updateField(id, { comment }, subId),
+            onCategoryChange: (id, category, subId) =>
+                transactionStore.updateField(id, { category }, subId),
+            onLabelChange: (id, labels, subId) =>
+                transactionStore.updateField(id, { labels }, subId),
+            onHideChange: (id, hide, subId) =>
+                transactionStore.updateField(id, { hide }, subId),
+            onCapitalizeChange: (id, capitalized, subId) =>
+                transactionStore.updateField(id, { capitalized }, subId),
             onDelete: transactionStore.delete,
             onSubTransactionCreate: transactionStore.createSubExpense,
         }),
         [
-            transactionStore.updateTransactionField,
-            transactionStore.updateSubExpenseField,
+            transactionStore.updateField,
             transactionStore.delete,
             transactionStore.createSubExpense,
         ]

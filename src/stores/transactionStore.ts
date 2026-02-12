@@ -138,42 +138,40 @@ export class TransactionStore {
         }
     }
 
-    *updateTransactionField(
+    *updateField(
         transactionId: string,
-        updates: Partial<SystemTransaction>
+        updates: Partial<SystemTransaction> | Partial<SystemSubTransaction>,
+        subTransactionId?: string
     ) {
-        const transaction: SystemTransaction | undefined =
-            yield this.transactionService.getTransactionById(transactionId)
-        if (!transaction) return
+        if (subTransactionId) {
+            const sub: SystemSubTransaction | undefined =
+                yield this.subExpenseService.getSubExpenseById(subTransactionId)
+            if (!sub) return
 
-        const updated: SystemTransaction =
-            yield this.transactionService.updateTransaction({
-                ...transaction,
-                ...updates,
-            })
+            const updated: SystemSubTransaction =
+                yield this.subExpenseService.updateSubExpense({
+                    ...sub,
+                    ...updates,
+                })
 
-        this.transactions = this.transactions.map((t) =>
-            t.id === transactionId ? updated : t
-        )
-    }
+            this.subExpenses = this.subExpenses.map((s) =>
+                s.id === subTransactionId ? updated : s
+            )
+        } else {
+            const transaction: SystemTransaction | undefined =
+                yield this.transactionService.getTransactionById(transactionId)
+            if (!transaction) return
 
-    *updateSubExpenseField(
-        subExpenseId: string,
-        updates: Partial<SystemSubTransaction>
-    ) {
-        const sub: SystemSubTransaction | undefined =
-            yield this.subExpenseService.getSubExpenseById(subExpenseId)
-        if (!sub) return
+            const updated: SystemTransaction =
+                yield this.transactionService.updateTransaction({
+                    ...transaction,
+                    ...updates,
+                })
 
-        const updated: SystemSubTransaction =
-            yield this.subExpenseService.updateSubExpense({
-                ...sub,
-                ...updates,
-            })
-
-        this.subExpenses = this.subExpenses.map((s) =>
-            s.id === subExpenseId ? updated : s
-        )
+            this.transactions = this.transactions.map((t) =>
+                t.id === transactionId ? updated : t
+            )
+        }
     }
 
     *delete(transactionId: string, subExpenseId?: string) {
