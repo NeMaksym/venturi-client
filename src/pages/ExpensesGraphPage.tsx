@@ -31,7 +31,7 @@ const ExpensesGraphPage: React.FC = () => {
             <YearGraph
                 data={[
                     ...transactionStore.allExpenses,
-                    ...transactionStore.subExpenses,
+                    ...transactionStore.allSubExpenses,
                 ].reduce(
                     (acc, expense) => {
                         const category =

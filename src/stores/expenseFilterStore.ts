@@ -129,8 +129,8 @@ export class ExpenseFilterStore {
                 labelCount[label] = (labelCount[label] || 0) + 1
             })
         })
-        this.root.transactionStore.subExpenses.forEach((subExpense) => {
-            subExpense.labels.forEach((label) => {
+        this.root.transactionStore.subTransactions.forEach((subTransaction) => {
+            subTransaction.labels.forEach((label) => {
                 labelCount[label] = (labelCount[label] || 0) + 1
             })
         })

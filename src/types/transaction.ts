@@ -118,6 +118,7 @@ export type RawSystemTransaction = Omit<
  * Represents a sub-transaction of a system transaction.
  * @interface SystemSubTransaction
  * @extends SystemTransaction
+ * @property {'sub-expense' | 'sub-income'} type - Sub-transaction type
  * @property {string} parentId - Unique identifier for the parent transaction
  */
 export interface SystemSubTransaction extends Pick<
@@ -140,6 +141,7 @@ export interface SystemSubTransaction extends Pick<
     | 'createdAt'
     | 'updatedAt'
 > {
+    type: 'sub-expense' | 'sub-income'
     parentId: string
 }
 
