@@ -9,10 +9,10 @@ import {
     LabelCell,
     ContextMenuCell,
 } from '../Cells'
-import { SystemTransaction } from '../../../types'
+import { Transaction } from '../../../types'
 
 interface TransactionRowProps {
-    data: SystemTransaction
+    data: Transaction
 }
 
 export const TransactionBodyRow: React.FC<TransactionRowProps> = ({ data }) => (

@@ -9,10 +9,10 @@ import {
     ContextMenuCell,
     DateCell,
 } from '../Cells'
-import { SystemSubTransaction } from '../../../types'
+import { SubTransaction } from '../../../types'
 
 interface SubTransactionRowProps {
-    data: SystemSubTransaction
+    data: SubTransaction
 }
 
 export const SubTransactionBodyRow: React.FC<SubTransactionRowProps> = ({

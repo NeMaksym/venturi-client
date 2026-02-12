@@ -1,6 +1,6 @@
 import { Stores } from '../schema'
 import { DBProvider } from '../provider'
-import { RawSystemSubTransaction, SystemSubTransaction } from '../../types'
+import { RawSubTransaction, SubTransaction } from '../../types'
 import {
     currency,
     isFourDigitString,
@@ -12,7 +12,7 @@ export class SubTransactionService {
     // TODO: Hanled parent-related validations:
     //   - total amount should not exceed parent amount
     //   - types should corresponde
-    #validate(subTransaction: SystemSubTransaction): void {
+    #validate(subTransaction: SubTransaction): void {
         if (!isValidUnixMillis(subTransaction.time)) {
             throw new Error('Time should be number in unix milliseconds')
         }
@@ -48,7 +48,7 @@ export class SubTransactionService {
         }
     }
 
-    async getAll(): Promise<SystemSubTransaction[]> {
+    async getAll(): Promise<SubTransaction[]> {
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.SUB_TRANSACTIONS, 'readonly')
         const store = tx.objectStore(Stores.SUB_TRANSACTIONS)
@@ -64,7 +64,7 @@ export class SubTransactionService {
     async getByDateRange(
         startDate: Date,
         endDate: Date
-    ): Promise<SystemSubTransaction[]> {
+    ): Promise<SubTransaction[]> {
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.SUB_TRANSACTIONS, 'readonly')
         const store = tx.objectStore(Stores.SUB_TRANSACTIONS)
@@ -85,7 +85,7 @@ export class SubTransactionService {
         }
     }
 
-    async getByParentId(parentId: string): Promise<SystemSubTransaction[]> {
+    async getByParentId(parentId: string): Promise<SubTransaction[]> {
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.SUB_TRANSACTIONS, 'readonly')
         const store = tx.objectStore(Stores.SUB_TRANSACTIONS)
@@ -99,7 +99,7 @@ export class SubTransactionService {
         }
     }
 
-    async getByCategory(category: string): Promise<SystemSubTransaction[]> {
+    async getByCategory(category: string): Promise<SubTransaction[]> {
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.SUB_TRANSACTIONS, 'readonly')
         const store = tx.objectStore(Stores.SUB_TRANSACTIONS)
@@ -113,7 +113,7 @@ export class SubTransactionService {
         }
     }
 
-    async getById(id: string): Promise<SystemSubTransaction | undefined> {
+    async getById(id: string): Promise<SubTransaction | undefined> {
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.SUB_TRANSACTIONS, 'readonly')
         const store = tx.objectStore(Stores.SUB_TRANSACTIONS)
@@ -127,11 +127,11 @@ export class SubTransactionService {
     }
 
     async add(
-        subTransaction: RawSystemSubTransaction,
+        subTransaction: RawSubTransaction,
         parentAmount: number
-    ): Promise<SystemSubTransaction> {
+    ): Promise<SubTransaction> {
         const now = Date.now()
-        const subTransactionWithTimestamps: SystemSubTransaction = {
+        const subTransactionWithTimestamps: SubTransaction = {
             ...subTransaction,
             createdAt: now,
             updatedAt: now,
@@ -165,10 +165,8 @@ export class SubTransactionService {
         }
     }
 
-    async update(
-        subTransaction: SystemSubTransaction
-    ): Promise<SystemSubTransaction> {
-        const updatedSubTransaction: SystemSubTransaction = {
+    async update(subTransaction: SubTransaction): Promise<SubTransaction> {
+        const updatedSubTransaction: SubTransaction = {
             ...subTransaction,
             updatedAt: Date.now(),
         }

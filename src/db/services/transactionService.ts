@@ -1,6 +1,6 @@
 import { Stores } from '../schema'
 import { DBProvider } from '../provider'
-import { RawSystemTransaction, SystemTransaction } from '../../types'
+import { RawTransaction, Transaction } from '../../types'
 import {
     currency,
     isFourDigitString,
@@ -9,7 +9,7 @@ import {
 } from '../../utils'
 
 export class TransactionService {
-    #validateTransaction(transaction: SystemTransaction): void {
+    #validateTransaction(transaction: Transaction): void {
         if (!isValidUnixMillis(transaction.time)) {
             throw new Error('Time should be number in unix milliseconds')
         }
@@ -57,7 +57,7 @@ export class TransactionService {
     }
 
     async transactionExists(
-        transaction: SystemTransaction | RawSystemTransaction
+        transaction: Transaction | RawTransaction
     ): Promise<boolean> {
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.TRANSACTIONS, 'readonly')
@@ -79,7 +79,7 @@ export class TransactionService {
         }
     }
 
-    async getAllTransactions(): Promise<SystemTransaction[]> {
+    async getAllTransactions(): Promise<Transaction[]> {
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.TRANSACTIONS, 'readonly')
         const store = tx.objectStore(Stores.TRANSACTIONS)
@@ -92,9 +92,7 @@ export class TransactionService {
         }
     }
 
-    async getTransactionById(
-        id: string
-    ): Promise<SystemTransaction | undefined> {
+    async getTransactionById(id: string): Promise<Transaction | undefined> {
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.TRANSACTIONS, 'readonly')
         const store = tx.objectStore(Stores.TRANSACTIONS)
@@ -107,10 +105,8 @@ export class TransactionService {
         }
     }
 
-    async addTransaction(
-        transaction: RawSystemTransaction
-    ): Promise<SystemTransaction> {
-        const transactionWithTimestamps: SystemTransaction = {
+    async addTransaction(transaction: RawTransaction): Promise<Transaction> {
+        const transactionWithTimestamps: Transaction = {
             ...transaction,
             createdAt: Date.now(),
             updatedAt: Date.now(),
@@ -131,10 +127,8 @@ export class TransactionService {
         }
     }
 
-    async updateTransaction(
-        transaction: SystemTransaction
-    ): Promise<SystemTransaction> {
-        const updatedTransaction: SystemTransaction = {
+    async updateTransaction(transaction: Transaction): Promise<Transaction> {
+        const updatedTransaction: Transaction = {
             ...transaction,
             updatedAt: Date.now(),
         }

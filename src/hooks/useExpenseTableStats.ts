@@ -1,5 +1,5 @@
 import { fromSmallestUnit } from '../utils'
-import { SystemTransaction, SystemSubTransaction } from '../types'
+import { Transaction, SubTransaction } from '../types'
 
 export interface ExpenseTableStats {
     totalAmount: number
@@ -7,9 +7,7 @@ export interface ExpenseTableStats {
 }
 
 // TODO: Count total by currency
-export function useExpenseTableStats(
-    rows: (SystemTransaction | SystemSubTransaction)[]
-) {
+export function useExpenseTableStats(rows: (Transaction | SubTransaction)[]) {
     return {
         totalAmount: fromSmallestUnit(
             rows.reduce((acc, row) => acc + row.amount, 0)

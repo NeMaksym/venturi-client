@@ -1,6 +1,6 @@
-import { SystemTransaction } from '../types'
+import { Transaction } from '../types'
 
-function getSourceValue(transaction: SystemTransaction): string {
+function getSourceValue(transaction: Transaction): string {
     if ('card' in transaction) {
         return `**** ${transaction.card.value}`
     }
@@ -14,9 +14,7 @@ function getSourceValue(transaction: SystemTransaction): string {
 
 const DELIMITER = ':::'
 
-export function getTransactionSourceValue(
-    transaction: SystemTransaction
-): string {
+export function getTransactionSourceValue(transaction: Transaction): string {
     return `${transaction.bankId}${DELIMITER}${getSourceValue(transaction)}`
 }
 

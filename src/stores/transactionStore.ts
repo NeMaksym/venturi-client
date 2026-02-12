@@ -4,13 +4,9 @@ import { makeAutoObservable } from 'mobx'
 import { RootStore } from './rootStore'
 import { toSmallestUnit, timeDesc } from '../utils'
 import { TransactionService, SubTransactionService } from '../db/services'
-import {
-    SystemTransaction,
-    SystemSubTransaction,
-    RawSystemTransaction,
-} from '../types'
+import { Transaction, SubTransaction, RawTransaction } from '../types'
 
-type SubTransactionsMap = Map<string, SystemSubTransaction[]>
+type SubTransactionsMap = Map<string, SubTransaction[]>
 
 export class TransactionStore {
     private readonly root: RootStore
@@ -19,8 +15,8 @@ export class TransactionStore {
 
     loading = false
     error: string | null = null
-    transactions: SystemTransaction[] = []
-    subTransactions: SystemSubTransaction[] = []
+    transactions: Transaction[] = []
+    subTransactions: SubTransaction[] = []
 
     get allExpenses() {
         return this.transactions.filter((t) => t.type === 'expense')
@@ -39,7 +35,7 @@ export class TransactionStore {
     }
 
     async transactionExists(
-        transaction: SystemTransaction | RawSystemTransaction
+        transaction: Transaction | RawTransaction
     ): Promise<boolean> {
         return await this.transactionService.transactionExists(transaction)
     }
@@ -147,8 +143,8 @@ export class TransactionStore {
 
         try {
             const [transactions, subTransactions]: [
-                SystemTransaction[],
-                SystemSubTransaction[],
+                Transaction[],
+                SubTransaction[],
             ] = yield Promise.all([
                 this.transactionService.getAllTransactions(),
                 this.subTransactionService.getAll(),
@@ -168,16 +164,16 @@ export class TransactionStore {
     *updateField(
         transactionId: string,
         updates:
-            | Omit<Partial<SystemTransaction>, 'type'>
-            | Omit<Partial<SystemSubTransaction>, 'type'>,
+            | Omit<Partial<Transaction>, 'type'>
+            | Omit<Partial<SubTransaction>, 'type'>,
         subTransactionId?: string
     ) {
         if (subTransactionId) {
-            const sub: SystemSubTransaction | undefined =
+            const sub: SubTransaction | undefined =
                 yield this.subTransactionService.getById(subTransactionId)
             if (!sub) return
 
-            const updated: SystemSubTransaction =
+            const updated: SubTransaction =
                 yield this.subTransactionService.update({
                     ...sub,
                     ...updates,
@@ -187,11 +183,11 @@ export class TransactionStore {
                 s.id === subTransactionId ? updated : s
             )
         } else {
-            const transaction: SystemTransaction | undefined =
+            const transaction: Transaction | undefined =
                 yield this.transactionService.getTransactionById(transactionId)
             if (!transaction) return
 
-            const updated: SystemTransaction =
+            const updated: Transaction =
                 yield this.transactionService.updateTransaction({
                     ...transaction,
                     ...updates,
@@ -232,12 +228,12 @@ export class TransactionStore {
     }
 
     *createSubExpense(transactionId: string, amount: number) {
-        const transaction: SystemTransaction | undefined =
+        const transaction: Transaction | undefined =
             yield this.transactionService.getTransactionById(transactionId)
         if (!transaction) return
 
         const exchangeRate = transaction.referenceAmount / -transaction.amount
-        const subTransaction: SystemSubTransaction =
+        const subTransaction: SubTransaction =
             yield this.subTransactionService.add(
                 {
                     ...pick(transaction, [
@@ -280,8 +276,8 @@ export class TransactionStore {
         )
     }
 
-    *addTransaction(rawTransaction: RawSystemTransaction) {
-        const transaction: SystemTransaction =
+    *addTransaction(rawTransaction: RawTransaction) {
+        const transaction: Transaction =
             yield this.transactionService.addTransaction(rawTransaction)
 
         this.transactions.push(transaction)

@@ -2,13 +2,13 @@ import { useMemo } from 'react'
 import { timeDesc, getTransactionSourceValue } from '../utils'
 import { RootStore } from '../stores'
 import { useStore } from '../context/StoreContext'
-import { SystemTransaction, SystemSubTransaction } from '../types'
+import { Transaction, SubTransaction } from '../types'
 
 export function useExpenseTableRows() {
     const { transactionStore, expenseFilterStore } = useStore()
 
     return useMemo(() => {
-        const result: (SystemTransaction | SystemSubTransaction)[] = []
+        const result: (Transaction | SubTransaction)[] = []
 
         transactionStore.expensesInDateRange
             .slice()
@@ -47,7 +47,7 @@ export function useExpenseTableRows() {
 }
 
 function shouldShowTransaction(
-    transaction: SystemTransaction,
+    transaction: Transaction,
     filters: RootStore['expenseFilterStore']
 ) {
     if (filters.sources.length > 0) {
@@ -78,8 +78,8 @@ function shouldShowTransaction(
 }
 
 function shouldShowSubTransaction(
-    transaction: SystemTransaction,
-    subTransaction: SystemSubTransaction,
+    transaction: Transaction,
+    subTransaction: SubTransaction,
     filters: RootStore['expenseFilterStore']
 ) {
     if (filters.sources.length > 0) {
@@ -112,9 +112,9 @@ function shouldShowSubTransaction(
 }
 
 function expenseToTableRow(
-    expense: SystemTransaction,
-    subExpenses: SystemSubTransaction[]
-): SystemTransaction {
+    expense: Transaction,
+    subExpenses: SubTransaction[]
+): Transaction {
     const subExpensesSum = subExpenses.reduce(
         (sum, subExpense) => sum + subExpense.amount,
         0
@@ -133,9 +133,7 @@ function expenseToTableRow(
     }
 }
 
-function subExpenseToTableRow(
-    subExpense: SystemSubTransaction
-): SystemSubTransaction {
+function subExpenseToTableRow(subExpense: SubTransaction): SubTransaction {
     return {
         ...subExpense,
         amount: -subExpense.amount,

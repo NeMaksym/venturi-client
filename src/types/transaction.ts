@@ -66,8 +66,8 @@ export interface SourceTransaction {
 }
 
 /**
- * Represents a transaction with additional system-level metadata.
- * @interface SystemTransaction
+ * Represents a system-level transaction.
+ * @interface Transaction
  * @extends SourceTransaction
  * @property {string} type - Transaction type
  * @property {string} id - Unique identifier for the transaction
@@ -81,7 +81,7 @@ export interface SourceTransaction {
  * @property {number} createdAt - Creation timestamp of the transaction in Unix milliseconds
  * @property {number} updatedAt - Timestamp of the transaction last update in Unix milliseconds
  */
-export interface SystemTransaction extends Pick<
+export interface Transaction extends Pick<
     SourceTransaction,
     | 'originalId'
     | 'time'
@@ -109,20 +109,17 @@ export interface SystemTransaction extends Pick<
     updatedAt: number
 }
 
-export type RawSystemTransaction = Omit<
-    SystemTransaction,
-    'createdAt' | 'updatedAt'
->
+export type RawTransaction = Omit<Transaction, 'createdAt' | 'updatedAt'>
 
 /**
- * Represents a sub-transaction of a system transaction.
- * @interface SystemSubTransaction
- * @extends SystemTransaction
+ * Represents a sub-transaction of a transaction.
+ * @interface SubTransaction
+ * @extends Transaction
  * @property {'sub-expense' | 'sub-income'} type - Sub-transaction type
  * @property {string} parentId - Unique identifier for the parent transaction
  */
-export interface SystemSubTransaction extends Pick<
-    SystemTransaction,
+export interface SubTransaction extends Pick<
+    Transaction,
     | 'id'
     | 'time'
     | 'description'
@@ -145,7 +142,4 @@ export interface SystemSubTransaction extends Pick<
     parentId: string
 }
 
-export type RawSystemSubTransaction = Omit<
-    SystemSubTransaction,
-    'createdAt' | 'updatedAt'
->
+export type RawSubTransaction = Omit<SubTransaction, 'createdAt' | 'updatedAt'>

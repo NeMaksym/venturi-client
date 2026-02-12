@@ -1,11 +1,11 @@
 import { currency } from '../../../utils'
-import { RawSystemTransaction, SourceTransaction } from '../../../types'
+import { RawTransaction, SourceTransaction } from '../../../types'
 import { encodeKey, LoadExchangeRatesDTO } from './loadExchangeRates'
 
 const REFERENCE_CURRENCY_CODE = currency.usdNumCode
 
 export interface ToSystemTransactionsDTO extends LoadExchangeRatesDTO {
-    systemTransactions: RawSystemTransaction[]
+    systemTransactions: RawTransaction[]
 }
 
 type ToSystemTransactions = (
@@ -25,7 +25,7 @@ export const toSystemTransactions: ToSystemTransactions = (input) => {
                 ? Math.abs(transaction.amount)
                 : calculateRefAmount(transaction, exchangeRatesMap)
 
-        const type: RawSystemTransaction['type'] =
+        const type: RawTransaction['type'] =
             transaction.amount < 0 ? 'expense' : 'income'
 
         return {
