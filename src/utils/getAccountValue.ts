@@ -1,21 +1,50 @@
-import { Transaction } from '../types'
+import { AnyTransaction, BankSourceData } from '../types'
+import { bankProvider } from '../plugins'
+import { currency } from './currency'
 
-function getSourceValue(transaction: Transaction): string {
-    if ('card' in transaction) {
-        return `**** ${transaction.card.value}`
+function getSourceValue(source: BankSourceData): string {
+    if (source.card) {
+        return `**** ${source.card.value}`
     }
 
-    if ('account' in transaction) {
-        return transaction.account.value
+    if (source.account) {
+        return source.account.value
     }
 
-    throw new Error('Each transaction should have account and/or card')
+    throw new Error('Bank transaction should have account and/or card')
 }
 
 const DELIMITER = ':::'
 
-export function getTransactionSourceValue(transaction: Transaction): string {
-    return `${transaction.bankId}${DELIMITER}${getSourceValue(transaction)}`
+export function getTransactionSourceValue(transaction: AnyTransaction): string {
+    const { source } = transaction
+
+    switch (source.type) {
+        case 'bank':
+            return `${source.bankId}${DELIMITER}${getSourceValue(source)}`
+        case 'cash':
+            return `Cash${DELIMITER}${source.currencyCode}`
+    }
+}
+
+export function getTransactionSourceLabel(transaction: AnyTransaction): string {
+    const { source } = transaction
+
+    if (source.type === 'bank') {
+        const bankLabel = bankProvider.getLabelById(source.bankId)
+
+        if (source.card) {
+            return `${bankLabel} **** ${source.card.value}`
+        }
+
+        if (source.account) {
+            return `${bankLabel} ${source.account.value}`
+        }
+
+        return bankLabel
+    }
+
+    return `Cash ${currency.numToAlpha(source.currencyCode)}`
 }
 
 export function fromTransactionSourceValue(transactionSourceValue: string): {

@@ -1,50 +1,32 @@
 import { Stores } from '../schema'
 import { DBProvider } from '../provider'
-import { RawSubTransaction, SubTransaction } from '../../types'
-import {
-    currency,
-    isFourDigitString,
-    isIBAN,
-    isValidUnixMillis,
-} from '../../utils'
+import { SubTransaction } from '../../types'
+import { isValidUnixMillis } from '../../utils'
 
 export class SubTransactionService {
-    // TODO: Hanled parent-related validations:
+    // TODO: Handle parent-related validations:
     //   - total amount should not exceed parent amount
-    //   - types should corresponde
+    //   - types should correspond
+    // TODO: Add source validation
     #validate(subTransaction: SubTransaction): void {
         if (!isValidUnixMillis(subTransaction.time)) {
             throw new Error('Time should be number in unix milliseconds')
         }
-        if (!currency.numToAlpha(subTransaction.currencyCode)) {
-            throw new Error('Invalid currency code')
-        }
+
         if (subTransaction.type === 'sub-expense') {
-            if (subTransaction.amount >= 0) {
+            if (subTransaction.source.amount >= 0) {
                 throw new Error('Sub-expense amount must be negative')
             }
         } else if (subTransaction.type === 'sub-income') {
-            if (subTransaction.amount <= 0) {
+            if (subTransaction.source.amount <= 0) {
                 throw new Error('Sub-income amount must be positive')
             }
         } else {
             throw new Error('Invalid sub-transaction type')
         }
+
         if (subTransaction.referenceAmount <= 0) {
             throw new Error('Sub-transaction referenceAmount must be positive')
-        }
-        if (!subTransaction.account && !subTransaction.card) {
-            throw new Error('Sub-transaction should have account and/or card')
-        }
-        if ('account' in subTransaction) {
-            if (!isIBAN(subTransaction.account.value)) {
-                throw new Error('Invalid IBAN')
-            }
-        }
-        if ('card' in subTransaction) {
-            if (!isFourDigitString(subTransaction.card.value)) {
-                throw new Error('Invalid last four digits')
-            }
         }
     }
 
@@ -126,8 +108,9 @@ export class SubTransactionService {
         }
     }
 
+    // TODO: Separate total sum validation
     async add(
-        subTransaction: RawSubTransaction,
+        subTransaction: Omit<SubTransaction, 'createdAt' | 'updatedAt'>,
         parentAmount: number
     ): Promise<SubTransaction> {
         const now = Date.now()
@@ -140,11 +123,11 @@ export class SubTransactionService {
 
         const siblings = await this.getByParentId(subTransaction.parentId)
         const siblingSum = siblings.reduce(
-            (sum, s) => sum + Math.abs(s.amount),
+            (sum, s) => sum + Math.abs(s.source.amount),
             0
         )
         if (
-            siblingSum + Math.abs(subTransaction.amount) >
+            siblingSum + Math.abs(subTransaction.source.amount) >
             Math.abs(parentAmount)
         ) {
             throw new Error(

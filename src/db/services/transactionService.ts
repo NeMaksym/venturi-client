@@ -1,6 +1,6 @@
 import { Stores } from '../schema'
 import { DBProvider } from '../provider'
-import { RawTransaction, Transaction } from '../../types'
+import { AnyTransaction, BankSourceData, CashSourceData } from '../../types'
 import {
     currency,
     isFourDigitString,
@@ -9,56 +9,83 @@ import {
 } from '../../utils'
 
 export class TransactionService {
-    #validateTransaction(transaction: Transaction): void {
-        if (!isValidUnixMillis(transaction.time)) {
-            throw new Error('Time should be number in unix milliseconds')
-        }
-        if (!currency.numToAlpha(transaction.currencyCode)) {
-            throw new Error('Invalid currency code')
-        }
-
+    #validateType(transaction: AnyTransaction): void {
         if (transaction.type === 'expense') {
-            if (transaction.amount >= 0) {
+            if (transaction.source.amount >= 0) {
                 throw new Error('Expense amount must be negative')
             }
         } else if (transaction.type === 'income') {
-            if (transaction.amount <= 0) {
+            if (transaction.source.amount <= 0) {
                 throw new Error('Income amount must be positive')
             }
         } else {
             throw new Error('Invalid transaction type')
+        }
+    }
+
+    #validateBankSource(source: BankSourceData): void {
+        if (!currency.numToAlpha(source.currencyCode)) {
+            throw new Error('Invalid currency code')
+        }
+
+        if (!source.account && !source.card) {
+            throw new Error('Bank transaction should have account and/or card')
+        }
+        if (source.account) {
+            if (!isIBAN(source.account.value)) {
+                throw new Error('Invalid IBAN')
+            }
+        }
+        if (source.card) {
+            if (!isFourDigitString(source.card.value)) {
+                throw new Error('Invalid last four digits')
+            }
+        }
+        if (source.operation) {
+            if (source.operation.amount <= 0) {
+                throw new Error('Transaction operation amount must be positive')
+            }
+            if (!currency.numToAlpha(source.operation.currencyCode)) {
+                throw new Error('Invalid operation currency code')
+            }
+        }
+    }
+
+    #validateCashSource(source: CashSourceData): void {
+        if (!currency.numToAlpha(source.currencyCode)) {
+            throw new Error('Invalid currency code')
+        }
+    }
+
+    #validateTransaction(transaction: AnyTransaction): void {
+        this.#validateType(transaction)
+
+        if (!isValidUnixMillis(transaction.time)) {
+            throw new Error('Time should be number in unix milliseconds')
         }
 
         if (transaction.referenceAmount <= 0) {
             throw new Error('Transaction referenceAmount must be positive')
         }
 
-        if (transaction.operation) {
-            if (transaction.operation.amount <= 0) {
-                throw new Error('Transaction operation amount must be positive')
-            }
-            if (!currency.numToAlpha(transaction.operation.currencyCode)) {
-                throw new Error('Invalid operation currency code')
-            }
-        }
-        if (!('account' in transaction) && !('card' in transaction)) {
-            throw new Error('Transaction should have account and/or card')
-        }
-        if ('account' in transaction) {
-            if (!isIBAN(transaction.account.value)) {
-                throw new Error('Invalid IBAN')
-            }
-        }
-        if ('card' in transaction) {
-            if (!isFourDigitString(transaction.card.value)) {
-                throw new Error('Invalid last four digits')
-            }
+        switch (transaction.source.type) {
+            case 'bank':
+                this.#validateBankSource(transaction.source)
+                break
+            case 'cash':
+                this.#validateCashSource(transaction.source)
+                break
         }
     }
 
+    // TODO: Improve
     async transactionExists(
-        transaction: Transaction | RawTransaction
+        transaction:
+            | AnyTransaction
+            | Omit<AnyTransaction, 'createdAt' | 'updatedAt'>
     ): Promise<boolean> {
+        if (transaction.source.type === 'cash') return false
+
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.TRANSACTIONS, 'readonly')
         const store = tx.objectStore(Stores.TRANSACTIONS)
@@ -70,8 +97,10 @@ export class TransactionService {
             )
             return transactionsAtSameTime.some(
                 (dbTransaction) =>
-                    dbTransaction.bankId === transaction.bankId &&
-                    dbTransaction.amount === transaction.amount
+                    dbTransaction.source.type === 'bank' &&
+                    transaction.source.type === 'bank' &&
+                    dbTransaction.source.bankId === transaction.source.bankId &&
+                    dbTransaction.source.amount === transaction.source.amount
             )
         } catch (error) {
             console.error('Failed to check if transaction exists:', error)
@@ -79,7 +108,7 @@ export class TransactionService {
         }
     }
 
-    async getAllTransactions(): Promise<Transaction[]> {
+    async getAllTransactions(): Promise<AnyTransaction[]> {
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.TRANSACTIONS, 'readonly')
         const store = tx.objectStore(Stores.TRANSACTIONS)
@@ -92,7 +121,7 @@ export class TransactionService {
         }
     }
 
-    async getTransactionById(id: string): Promise<Transaction | undefined> {
+    async getTransactionById(id: string): Promise<AnyTransaction | undefined> {
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.TRANSACTIONS, 'readonly')
         const store = tx.objectStore(Stores.TRANSACTIONS)
@@ -105,8 +134,10 @@ export class TransactionService {
         }
     }
 
-    async addTransaction(transaction: RawTransaction): Promise<Transaction> {
-        const transactionWithTimestamps: Transaction = {
+    async addTransaction(
+        transaction: Omit<AnyTransaction, 'createdAt' | 'updatedAt'>
+    ): Promise<AnyTransaction> {
+        const transactionWithTimestamps: AnyTransaction = {
             ...transaction,
             createdAt: Date.now(),
             updatedAt: Date.now(),
@@ -127,8 +158,10 @@ export class TransactionService {
         }
     }
 
-    async updateTransaction(transaction: Transaction): Promise<Transaction> {
-        const updatedTransaction: Transaction = {
+    async updateTransaction(
+        transaction: AnyTransaction
+    ): Promise<AnyTransaction> {
+        const updatedTransaction: AnyTransaction = {
             ...transaction,
             updatedAt: Date.now(),
         }

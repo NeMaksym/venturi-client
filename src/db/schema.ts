@@ -1,6 +1,6 @@
 import { DBSchema } from 'idb'
 
-import type { Transaction, SubTransaction, Category } from '../types'
+import type { AnyTransaction, SubTransaction, Category } from '../types'
 
 export const Stores = {
     TRANSACTIONS: 'transactions',
@@ -11,7 +11,7 @@ export const Stores = {
 export interface VenturiDB extends DBSchema {
     [Stores.TRANSACTIONS]: {
         key: string
-        value: Transaction
+        value: AnyTransaction
         indexes: {
             time: number
             category: string

@@ -1,17 +1,18 @@
 import { ToSystemTransactionsDTO } from './toSystemTransactions'
 import { split, splitAsync } from '../../../utils'
-import { RawTransaction } from '../../../types'
 
 type AddToDB = (input: ToSystemTransactionsDTO) => Promise<void>
+
+type SystemTransaction = ToSystemTransactionsDTO['systemTransactions'][number]
 
 export const addToDB: AddToDB = async ({
     systemTransactions,
     addMessage,
     transactionStore,
 }) => {
-    const [expenses, incomes] = split<RawTransaction>(
+    const [expenses, incomes] = split<SystemTransaction>(
         systemTransactions,
-        (transaction) => transaction.amount < 0
+        (transaction) => transaction.source.amount < 0
     )
 
     addMessage(
@@ -19,14 +20,14 @@ export const addToDB: AddToDB = async ({
     )
 
     const [expensesDuplicates, expensesToAdd] =
-        await splitAsync<RawTransaction>(expenses, async (transaction) =>
+        await splitAsync<SystemTransaction>(expenses, async (transaction) =>
             transactionStore.transactionExists(transaction)
         )
 
-    const [incomesDuplicates, incomesToAdd] = await splitAsync<RawTransaction>(
-        incomes,
-        async (transaction) => transactionStore.transactionExists(transaction)
-    )
+    const [incomesDuplicates, incomesToAdd] =
+        await splitAsync<SystemTransaction>(incomes, async (transaction) =>
+            transactionStore.transactionExists(transaction)
+        )
 
     if (expensesDuplicates.length || incomesDuplicates.length) {
         addMessage(

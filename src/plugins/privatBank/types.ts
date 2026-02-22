@@ -24,5 +24,5 @@ export type StatementRow = [
     number, // operationAmount
     string, // operationCurrency
     number, // balance
-    string // balanceCurrency
+    string, // balanceCurrency
 ]

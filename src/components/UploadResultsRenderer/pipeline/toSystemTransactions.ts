@@ -1,12 +1,18 @@
 import { currency } from '../../../utils'
-import { RawTransaction, SourceTransaction } from '../../../types'
+import {
+    BankSourceData,
+    BankTransaction,
+    SourceTransaction,
+} from '../../../types'
 import { encodeKey, LoadExchangeRatesDTO } from './loadExchangeRates'
 
 const REFERENCE_CURRENCY_CODE = currency.usdNumCode
 
 export interface ToSystemTransactionsDTO extends LoadExchangeRatesDTO {
-    systemTransactions: RawTransaction[]
+    systemTransactions: Omit<BankTransaction, 'createdAt' | 'updatedAt'>[]
 }
+
+type SystemTransaction = ToSystemTransactionsDTO['systemTransactions'][number]
 
 type ToSystemTransactions = (
     input: LoadExchangeRatesDTO
@@ -19,29 +25,52 @@ export const toSystemTransactions: ToSystemTransactions = (input) => {
 
     // Reference amount should be computed based on account amount.
     // "amount" is always >= "operation.amount" because of commission, double exchange, etc.
-    const systemTransactions = sourceTransactions.map((transaction) => {
-        const referenceAmount =
-            transaction.currencyCode === REFERENCE_CURRENCY_CODE
-                ? Math.abs(transaction.amount)
-                : calculateRefAmount(transaction, exchangeRatesMap)
+    const systemTransactions = sourceTransactions.map(
+        (transaction): SystemTransaction => {
+            const referenceAmount =
+                transaction.currencyCode === REFERENCE_CURRENCY_CODE
+                    ? Math.abs(transaction.amount)
+                    : calculateRefAmount(transaction, exchangeRatesMap)
 
-        const type: RawTransaction['type'] =
-            transaction.amount < 0 ? 'expense' : 'income'
+            const type: BankTransaction['type'] =
+                transaction.amount < 0 ? 'expense' : 'income'
 
-        return {
-            ...transaction,
-            id: crypto.randomUUID(),
-            bankId,
-            type,
-            referenceAmount,
-            referenceCurrencyCode: REFERENCE_CURRENCY_CODE,
-            category: '',
-            capitalized: false,
-            hide: false,
-            labels: [],
-            comment: transaction.comment || '',
+            const source: BankSourceData = {
+                type: 'bank',
+                bankId,
+                amount: transaction.amount,
+                currencyCode: transaction.currencyCode,
+                ...(transaction.account && { account: transaction.account }),
+                ...(transaction.card && { card: transaction.card }),
+                ...(transaction.operation && {
+                    operation: transaction.operation,
+                }),
+                ...(transaction.originalId && {
+                    originalId: transaction.originalId,
+                }),
+                ...(transaction.commissionRate && {
+                    commissionRate: transaction.commissionRate,
+                }),
+                ...(transaction.mcc && { mcc: transaction.mcc }),
+                ...(transaction.hold && { hold: transaction.hold }),
+            }
+
+            return {
+                id: crypto.randomUUID(),
+                type,
+                time: transaction.time,
+                description: transaction.description,
+                referenceAmount,
+                referenceCurrencyCode: REFERENCE_CURRENCY_CODE,
+                category: '',
+                capitalized: false,
+                hide: false,
+                labels: [],
+                comment: transaction.comment || '',
+                source: source,
+            }
         }
-    })
+    )
 
     return {
         ...input,

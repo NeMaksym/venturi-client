@@ -9,10 +9,10 @@ import {
     LabelCell,
     ContextMenuCell,
 } from '../Cells'
-import { Transaction } from '../../../types'
+import { AnyTransaction } from '../../../types'
 
 interface TransactionRowProps {
-    data: Transaction
+    data: AnyTransaction
 }
 
 export const TransactionBodyRow: React.FC<TransactionRowProps> = ({ data }) => (
@@ -23,8 +23,8 @@ export const TransactionBodyRow: React.FC<TransactionRowProps> = ({ data }) => (
             comment={data.comment}
         />
         <AmountCell
-            amount={data.amount}
-            currencyCode={data.currencyCode}
+            amount={data.source.amount}
+            currencyCode={data.source.currencyCode}
             referenceAmount={data.referenceAmount}
             referenceCurrencyCode={data.referenceCurrencyCode}
         />
@@ -35,7 +35,7 @@ export const TransactionBodyRow: React.FC<TransactionRowProps> = ({ data }) => (
             comment={data.comment}
             isHidden={data.hide}
             isCapitalized={data.capitalized}
-            maxSubTransactionAmount={data.amount}
+            maxSubTransactionAmount={data.source.amount}
         />
     </TableRow>
 )

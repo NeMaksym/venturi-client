@@ -1,10 +1,9 @@
-import { pick } from 'lodash'
 import { makeAutoObservable } from 'mobx'
 
 import { RootStore } from './rootStore'
 import { toSmallestUnit, timeDesc } from '../utils'
 import { TransactionService, SubTransactionService } from '../db/services'
-import { Transaction, SubTransaction, RawTransaction } from '../types'
+import { SubTransaction, AnyTransaction } from '../types'
 
 type SubTransactionsMap = Map<string, SubTransaction[]>
 
@@ -15,7 +14,7 @@ export class TransactionStore {
 
     loading = false
     error: string | null = null
-    transactions: Transaction[] = []
+    transactions: AnyTransaction[] = []
     subTransactions: SubTransaction[] = []
 
     get allExpenses() {
@@ -35,7 +34,9 @@ export class TransactionStore {
     }
 
     async transactionExists(
-        transaction: Transaction | RawTransaction
+        transaction:
+            | AnyTransaction
+            | Omit<AnyTransaction, 'createdAt' | 'updatedAt'>
     ): Promise<boolean> {
         return await this.transactionService.transactionExists(transaction)
     }
@@ -143,7 +144,7 @@ export class TransactionStore {
 
         try {
             const [transactions, subTransactions]: [
-                Transaction[],
+                AnyTransaction[],
                 SubTransaction[],
             ] = yield Promise.all([
                 this.transactionService.getAllTransactions(),
@@ -164,7 +165,7 @@ export class TransactionStore {
     *updateField(
         transactionId: string,
         updates:
-            | Omit<Partial<Transaction>, 'type'>
+            | Omit<Partial<AnyTransaction>, 'type'>
             | Omit<Partial<SubTransaction>, 'type'>,
         subTransactionId?: string
     ) {
@@ -183,11 +184,11 @@ export class TransactionStore {
                 s.id === subTransactionId ? updated : s
             )
         } else {
-            const transaction: Transaction | undefined =
+            const transaction: AnyTransaction | undefined =
                 yield this.transactionService.getTransactionById(transactionId)
             if (!transaction) return
 
-            const updated: Transaction =
+            const updated: AnyTransaction =
                 yield this.transactionService.updateTransaction({
                     ...transaction,
                     ...updates,
@@ -228,35 +229,34 @@ export class TransactionStore {
     }
 
     *createSubExpense(transactionId: string, amount: number) {
-        const transaction: Transaction | undefined =
+        const transaction: AnyTransaction | undefined =
             yield this.transactionService.getTransactionById(transactionId)
         if (!transaction) return
 
-        const exchangeRate = transaction.referenceAmount / -transaction.amount
+        // TODO: Differentiate between sources
+        const exchangeRate =
+            transaction.referenceAmount / -transaction.source.amount
         const subTransaction: SubTransaction =
             yield this.subTransactionService.add(
                 {
-                    ...pick(transaction, [
-                        'time',
-                        'description',
-                        'currencyCode',
-                        'referenceCurrencyCode',
-                        'bankId',
-                        'account',
-                        'card',
-                        'category',
-                        'labels',
-                    ]),
                     type: 'sub-expense',
                     id: crypto.randomUUID(),
                     parentId: transactionId,
-                    amount: -toSmallestUnit(amount),
+                    time: transaction.time,
+                    description: transaction.description,
+                    referenceCurrencyCode: transaction.referenceCurrencyCode,
+                    category: transaction.category,
+                    labels: transaction.labels,
+                    source: {
+                        ...transaction.source,
+                        amount: -toSmallestUnit(amount),
+                    },
                     referenceAmount: toSmallestUnit(amount * exchangeRate),
                     capitalized: false,
                     hide: false,
                     comment: '',
                 },
-                transaction.amount
+                transaction.source.amount
             )
 
         this.subTransactions.push(subTransaction)
@@ -276,8 +276,10 @@ export class TransactionStore {
         )
     }
 
-    *addTransaction(rawTransaction: RawTransaction) {
-        const transaction: Transaction =
+    *addTransaction(
+        rawTransaction: Omit<AnyTransaction, 'createdAt' | 'updatedAt'>
+    ) {
+        const transaction: AnyTransaction =
             yield this.transactionService.addTransaction(rawTransaction)
 
         this.transactions.push(transaction)

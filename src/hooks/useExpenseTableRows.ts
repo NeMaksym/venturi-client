@@ -2,13 +2,13 @@ import { useMemo } from 'react'
 import { timeDesc, getTransactionSourceValue } from '../utils'
 import { RootStore } from '../stores'
 import { useStore } from '../context/StoreContext'
-import { Transaction, SubTransaction } from '../types'
+import { AnyTransaction, SubTransaction } from '../types'
 
 export function useExpenseTableRows() {
     const { transactionStore, expenseFilterStore } = useStore()
 
     return useMemo(() => {
-        const result: (Transaction | SubTransaction)[] = []
+        const result: (AnyTransaction | SubTransaction)[] = []
 
         transactionStore.expensesInDateRange
             .slice()
@@ -47,7 +47,7 @@ export function useExpenseTableRows() {
 }
 
 function shouldShowTransaction(
-    transaction: Transaction,
+    transaction: AnyTransaction,
     filters: RootStore['expenseFilterStore']
 ) {
     if (filters.sources.length > 0) {
@@ -78,7 +78,7 @@ function shouldShowTransaction(
 }
 
 function shouldShowSubTransaction(
-    transaction: Transaction,
+    transaction: AnyTransaction,
     subTransaction: SubTransaction,
     filters: RootStore['expenseFilterStore']
 ) {
@@ -112,23 +112,26 @@ function shouldShowSubTransaction(
 }
 
 function expenseToTableRow(
-    expense: Transaction,
+    expense: AnyTransaction,
     subExpenses: SubTransaction[]
-): Transaction {
+): AnyTransaction {
     const subExpensesSum = subExpenses.reduce(
-        (sum, subExpense) => sum + subExpense.amount,
+        (sum, subExpense) => sum + subExpense.source.amount,
         0
     )
     const subExpensesRefSum = subExpenses.reduce(
         (sum, sub) => sum + sub.referenceAmount,
         0
     )
-    const expenseAmount = expense.amount - subExpensesSum
+    const expenseAmount = expense.source.amount - subExpensesSum
     const expenseRefAmount = expense.referenceAmount - subExpensesRefSum
 
     return {
         ...expense,
-        amount: -expenseAmount,
+        source: {
+            ...expense.source,
+            amount: -expenseAmount,
+        },
         referenceAmount: expenseRefAmount,
     }
 }
@@ -136,6 +139,9 @@ function expenseToTableRow(
 function subExpenseToTableRow(subExpense: SubTransaction): SubTransaction {
     return {
         ...subExpense,
-        amount: -subExpense.amount,
+        source: {
+            ...subExpense.source,
+            amount: -subExpense.source.amount,
+        },
     }
 }

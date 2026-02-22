@@ -1,7 +1,6 @@
 import { makeAutoObservable, reaction } from 'mobx'
 import { RootStore } from './rootStore'
-import { fromTransactionSourceValue, getTransactionSourceValue } from '../utils'
-import { bankProvider } from '../plugins'
+import { getTransactionSourceValue, getTransactionSourceLabel } from '../utils'
 
 export const STORAGE_KEYS = {
     START_DATE: 'filter-start-date',
@@ -96,28 +95,22 @@ export class ExpenseFilterStore {
     }
 
     get sourceOptions() {
-        const uniqueSources = new Set<string>()
+        const sourceMap = new Map<string, string>()
 
         const allTransactions = this.root.transactionStore.allExpenses
 
         allTransactions.forEach((transaction) => {
             const sourceValue = getTransactionSourceValue(transaction)
-            uniqueSources.add(sourceValue)
+            if (!sourceMap.has(sourceValue)) {
+                sourceMap.set(
+                    sourceValue,
+                    getTransactionSourceLabel(transaction)
+                )
+            }
         })
 
-        return Array.from(uniqueSources)
-            .map((transactionSourceValue) => {
-                const { bankId, sourceValue } = fromTransactionSourceValue(
-                    transactionSourceValue
-                )
-
-                const bankLabel = bankProvider.getLabelById(bankId)
-
-                return {
-                    value: transactionSourceValue,
-                    label: `${bankLabel} ${sourceValue}`,
-                }
-            })
+        return Array.from(sourceMap)
+            .map(([value, label]) => ({ value, label }))
             .sort((a, b) => a.label.localeCompare(b.label))
     }
 

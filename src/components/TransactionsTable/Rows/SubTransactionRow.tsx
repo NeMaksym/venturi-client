@@ -34,8 +34,8 @@ export const SubTransactionBodyRow: React.FC<SubTransactionRowProps> = ({
             comment={data.comment}
         />
         <AmountCell
-            amount={data.amount}
-            currencyCode={data.currencyCode}
+            amount={data.source.amount}
+            currencyCode={data.source.currencyCode}
             referenceAmount={data.referenceAmount}
             referenceCurrencyCode={data.referenceCurrencyCode}
         />
