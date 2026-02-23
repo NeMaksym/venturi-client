@@ -58,6 +58,7 @@ export const toSystemTransactions: ToSystemTransactions = (input) => {
             return {
                 id: crypto.randomUUID(),
                 type,
+                parentId: null,
                 time: transaction.time,
                 description: transaction.description,
                 referenceAmount,

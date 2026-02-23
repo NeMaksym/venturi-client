@@ -10,13 +10,11 @@ const filter = createFilterOptions<string>()
 
 interface LabelCellProps {
     transactionId: string
-    subTransactionId?: string
     labels: string[]
 }
 
 export const LabelCell: React.FC<LabelCellProps> = ({
     transactionId,
-    subTransactionId,
     labels,
 }) => {
     const { onLabelChange } = useTransactionHandlers()
@@ -38,7 +36,7 @@ export const LabelCell: React.FC<LabelCellProps> = ({
                 value={labels}
                 onChange={(_, value) => {
                     if (value) {
-                        onLabelChange(transactionId, value, subTransactionId)
+                        onLabelChange(transactionId, value)
                     }
                 }}
                 filterOptions={(options, params) => {

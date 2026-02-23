@@ -20,23 +20,23 @@ export function useExpenseHandlers(): ExpenseHandlers {
 
     return useMemo(
         () => ({
-            onCommentChange: (id, comment, subId) =>
-                transactionStore.updateField(id, { comment }, subId),
-            onCategoryChange: (id, category, subId) =>
-                transactionStore.updateField(id, { category }, subId),
-            onLabelChange: (id, labels, subId) =>
-                transactionStore.updateField(id, { labels }, subId),
-            onHideChange: (id, hide, subId) =>
-                transactionStore.updateField(id, { hide }, subId),
-            onCapitalizeChange: (id, capitalized, subId) =>
-                transactionStore.updateField(id, { capitalized }, subId),
+            onCommentChange: (id, comment) =>
+                transactionStore.updateField(id, { comment }),
+            onCategoryChange: (id, category) =>
+                transactionStore.updateField(id, { category }),
+            onLabelChange: (id, labels) =>
+                transactionStore.updateField(id, { labels }),
+            onHideChange: (id, hide) =>
+                transactionStore.updateField(id, { hide }),
+            onCapitalizeChange: (id, capitalized) =>
+                transactionStore.updateField(id, { capitalized }),
             onDelete: transactionStore.delete,
-            onSubTransactionCreate: transactionStore.createSubExpense,
+            onSubTransactionCreate: transactionStore.createChildExpense,
         }),
         [
             transactionStore.updateField,
             transactionStore.delete,
-            transactionStore.createSubExpense,
+            transactionStore.createChildExpense,
         ]
     )
 }

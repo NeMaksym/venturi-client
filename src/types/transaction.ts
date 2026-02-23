@@ -95,6 +95,7 @@ type SourceData = BankSourceData | CashSourceData
 /**
  * Represents a system-level transaction.
  * @property {string} id - Unique identifier
+ * @property {string | null} parentId - Parent transaction identifier
  * @property {'expense' | 'income'} type - Flow direction
  * @property {number} time - Transaction timestamp in Unix milliseconds
  * @property {string} description - Description of the transaction
@@ -112,6 +113,7 @@ type SourceData = BankSourceData | CashSourceData
 interface Transaction<S> {
     type: 'expense' | 'income'
     id: string
+    parentId: string | null
     time: number
     description: string
     referenceAmount: number
@@ -129,30 +131,3 @@ interface Transaction<S> {
 export type AnyTransaction = Transaction<SourceData>
 export type BankTransaction = Transaction<BankSourceData>
 export type CashTransaction = Transaction<CashSourceData>
-
-/**
- * Represents a sub-transaction of a transaction.
- * @interface SubTransaction
- * @extends AnyTransaction
- * @property {'sub-expense' | 'sub-income'} type - Sub-transaction type
- * @property {string} parentId - Unique identifier for the parent transaction
- */
-export interface SubTransaction extends Pick<
-    AnyTransaction,
-    | 'id'
-    | 'time'
-    | 'description'
-    | 'referenceAmount'
-    | 'referenceCurrencyCode'
-    | 'category'
-    | 'capitalized'
-    | 'hide'
-    | 'labels'
-    | 'comment'
-    | 'source'
-    | 'createdAt'
-    | 'updatedAt'
-> {
-    type: 'sub-expense' | 'sub-income'
-    parentId: string
-}

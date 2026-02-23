@@ -1,8 +1,4 @@
-import {
-    ExpenseCategoryService,
-    TransactionService,
-    SubTransactionService,
-} from '../db/services'
+import { ExpenseCategoryService, TransactionService } from '../db/services'
 import { ExpenseFilterStore } from './expenseFilterStore'
 import { ExpenseCategoryStore } from './expenseCategoryStore'
 import { TransactionStore } from './transactionStore'
@@ -23,11 +19,6 @@ export class RootStore {
         this.expenseCategoryStore = new ExpenseCategoryStore(categoryService)
 
         const transactionService = new TransactionService()
-        const subTransactionService = new SubTransactionService()
-        this.transactionStore = new TransactionStore(
-            this,
-            transactionService,
-            subTransactionService
-        )
+        this.transactionStore = new TransactionStore(this, transactionService)
     }
 }

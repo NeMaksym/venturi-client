@@ -9,10 +9,10 @@ import {
     ContextMenuCell,
     DateCell,
 } from '../Cells'
-import { SubTransaction } from '../../../types'
+import { AnyTransaction } from '../../../types'
 
 interface SubTransactionRowProps {
-    data: SubTransaction
+    data: AnyTransaction
 }
 
 export const SubTransactionBodyRow: React.FC<SubTransactionRowProps> = ({
@@ -39,19 +39,10 @@ export const SubTransactionBodyRow: React.FC<SubTransactionRowProps> = ({
             referenceAmount={data.referenceAmount}
             referenceCurrencyCode={data.referenceCurrencyCode}
         />
-        <CategoryCell
-            transactionId={data.parentId}
-            subTransactionId={data.id}
-            category={data.category}
-        />
-        <LabelCell
-            transactionId={data.parentId}
-            subTransactionId={data.id}
-            labels={data.labels}
-        />
+        <CategoryCell transactionId={data.id} category={data.category} />
+        <LabelCell transactionId={data.id} labels={data.labels} />
         <ContextMenuCell
-            transactionId={data.parentId}
-            subTransactionId={data.id}
+            transactionId={data.id}
             comment={data.comment}
             isHidden={data.hide}
             isCapitalized={data.capitalized}

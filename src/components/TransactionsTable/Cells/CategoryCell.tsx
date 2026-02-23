@@ -11,20 +11,18 @@ const EMPTY_CATEGORY = ''
 
 interface CategoryCellProps {
     transactionId: string
-    subTransactionId?: string
     category: string
 }
 
 export const CategoryCell: React.FC<CategoryCellProps> = ({
     transactionId,
-    subTransactionId,
     category,
 }) => {
     const { onCategoryChange } = useTransactionHandlers()
     const { categories } = useTransactionOptions()
 
     const handleChange = (e: SelectChangeEvent<string>) => {
-        onCategoryChange(transactionId, e.target.value, subTransactionId)
+        onCategoryChange(transactionId, e.target.value)
     }
 
     return (

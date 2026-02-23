@@ -2,35 +2,71 @@ import { makeAutoObservable } from 'mobx'
 
 import { RootStore } from './rootStore'
 import { toSmallestUnit, timeDesc } from '../utils'
-import { TransactionService, SubTransactionService } from '../db/services'
-import { SubTransaction, AnyTransaction } from '../types'
+import { TransactionService } from '../db/services'
+import { AnyTransaction } from '../types'
 
-type SubTransactionsMap = Map<string, SubTransaction[]>
+type ChildrenMap = Map<string, AnyTransaction[]>
 
 export class TransactionStore {
     private readonly root: RootStore
     private readonly transactionService: TransactionService
-    private readonly subTransactionService: SubTransactionService
 
     loading = false
     error: string | null = null
     transactions: AnyTransaction[] = []
-    subTransactions: SubTransaction[] = []
+
+    isParentTransaction(transaction: AnyTransaction) {
+        return transaction.parentId === null
+    }
+
+    isChildTransaction(transaction: AnyTransaction) {
+        return transaction.parentId !== null
+    }
 
     get allExpenses() {
         return this.transactions.filter((t) => t.type === 'expense')
+    }
+
+    get allParentExpenses() {
+        return this.allExpenses.filter((t) => this.isParentTransaction(t))
     }
 
     get allIncomes() {
         return this.transactions.filter((t) => t.type === 'income')
     }
 
-    get allSubExpenses() {
-        return this.subTransactions.filter((s) => s.type === 'sub-expense')
+    get allParentIncomes() {
+        return this.allIncomes.filter((t) => this.isParentTransaction(t))
     }
 
-    get allSubIncomes() {
-        return this.subTransactions.filter((s) => s.type === 'sub-income')
+    get parentExpensesInDateRange() {
+        const filters = this.root.expenseFilterStore
+
+        return this.allParentExpenses.filter(
+            (expense) =>
+                expense.time >= filters.unixStartDate &&
+                expense.time <= filters.unixEndDate
+        )
+    }
+
+    get childExpensesMapInDateRange(): ChildrenMap {
+        const filters = this.root.expenseFilterStore
+
+        return this.transactions
+            .filter(
+                (t) =>
+                    this.isChildTransaction(t) &&
+                    t.type === 'expense' &&
+                    t.time >= filters.unixStartDate &&
+                    t.time <= filters.unixEndDate
+            )
+            .sort(timeDesc)
+            .reduce<ChildrenMap>((acc, t) => {
+                const children = acc.get(t.parentId!) || []
+                children.push(t)
+                acc.set(t.parentId!, children)
+                return acc
+            }, new Map())
     }
 
     async transactionExists(
@@ -41,101 +77,10 @@ export class TransactionStore {
         return await this.transactionService.transactionExists(transaction)
     }
 
-    constructor(
-        root: RootStore,
-        transactionService: TransactionService,
-        subTransactionService: SubTransactionService
-    ) {
+    constructor(root: RootStore, transactionService: TransactionService) {
         makeAutoObservable(this, {}, { autoBind: true })
         this.root = root
         this.transactionService = transactionService
-        this.subTransactionService = subTransactionService
-    }
-
-    getTransactionsInDateRange(startDate: number, endDate: number) {
-        return this.transactions.filter((transaction) => {
-            return transaction.time >= startDate && transaction.time <= endDate
-        })
-    }
-
-    getExpensesInDateRange(startDate: number, endDate: number) {
-        return this.getTransactionsInDateRange(startDate, endDate).filter(
-            (t) => t.type === 'expense'
-        )
-    }
-
-    getIncomesInDateRange(startDate: number, endDate: number) {
-        return this.getTransactionsInDateRange(startDate, endDate).filter(
-            (t) => t.type === 'income'
-        )
-    }
-
-    getSubTransactionsInDateRange(startDate: number, endDate: number) {
-        return this.subTransactions.filter((sub) => {
-            return sub.time >= startDate && sub.time <= endDate
-        })
-    }
-
-    getSubTransactionsMapInDateRange(startDate: number, endDate: number) {
-        return this.getSubTransactionsInDateRange(startDate, endDate)
-            .slice()
-            .sort(timeDesc)
-            .reduce<SubTransactionsMap>((acc, sub) => {
-                const subs = acc.get(sub.parentId) || []
-                subs.push(sub)
-                acc.set(sub.parentId, subs)
-                return acc
-            }, new Map())
-    }
-
-    get expensesInDateRange() {
-        const filters = this.root.expenseFilterStore
-        return this.allExpenses.filter((expense) => {
-            return (
-                expense.time >= filters.unixStartDate &&
-                expense.time <= filters.unixEndDate
-            )
-        })
-    }
-
-    get subTransactionsInDateRange() {
-        const filters = this.root.expenseFilterStore
-        return this.subTransactions.filter((sub) => {
-            return (
-                sub.time >= filters.unixStartDate &&
-                sub.time <= filters.unixEndDate
-            )
-        })
-    }
-
-    get subTransactionsMapInDateRange() {
-        return this.subTransactionsInDateRange
-            .slice()
-            .sort(timeDesc)
-            .reduce<SubTransactionsMap>((acc, sub) => {
-                const subs = acc.get(sub.parentId) || []
-                subs.push(sub)
-                acc.set(sub.parentId, subs)
-                return acc
-            }, new Map())
-    }
-
-    get subExpensesInDateRange() {
-        return this.subTransactionsInDateRange.filter(
-            (s) => s.type === 'sub-expense'
-        )
-    }
-
-    get subExpensesMapInDateRange() {
-        return this.subExpensesInDateRange
-            .slice()
-            .sort(timeDesc)
-            .reduce<SubTransactionsMap>((acc, sub) => {
-                const subs = acc.get(sub.parentId) || []
-                subs.push(sub)
-                acc.set(sub.parentId, subs)
-                return acc
-            }, new Map())
     }
 
     *loadAll() {
@@ -143,16 +88,10 @@ export class TransactionStore {
         this.error = null
 
         try {
-            const [transactions, subTransactions]: [
-                AnyTransaction[],
-                SubTransaction[],
-            ] = yield Promise.all([
-                this.transactionService.getAllTransactions(),
-                this.subTransactionService.getAll(),
-            ])
+            const transactions: AnyTransaction[] =
+                yield this.transactionService.getAllTransactions()
 
             this.transactions = transactions
-            this.subTransactions = subTransactions
         } catch (e) {
             this.error =
                 e instanceof Error ? e.message : 'Failed to load transactions'
@@ -161,126 +100,83 @@ export class TransactionStore {
         }
     }
 
-    // TODO:Improve types
     *updateField(
-        transactionId: string,
-        updates:
-            | Omit<Partial<AnyTransaction>, 'type'>
-            | Omit<Partial<SubTransaction>, 'type'>,
-        subTransactionId?: string
+        id: string,
+        updates: Partial<
+            Pick<
+                AnyTransaction,
+                'category' | 'labels' | 'comment' | 'hide' | 'capitalized'
+            >
+        >
     ) {
-        if (subTransactionId) {
-            const sub: SubTransaction | undefined =
-                yield this.subTransactionService.getById(subTransactionId)
-            if (!sub) return
+        const transaction: AnyTransaction | undefined =
+            yield this.transactionService.getTransactionById(id)
+        if (!transaction) return
 
-            const updated: SubTransaction =
-                yield this.subTransactionService.update({
-                    ...sub,
-                    ...updates,
-                })
+        const updated: AnyTransaction = this.isChildTransaction(transaction)
+            ? yield this.transactionService.updateChildTransaction(id, updates)
+            : yield this.transactionService.updateParentTransaction(id, updates)
 
-            this.subTransactions = this.subTransactions.map((s) =>
-                s.id === subTransactionId ? updated : s
-            )
-        } else {
-            const transaction: AnyTransaction | undefined =
-                yield this.transactionService.getTransactionById(transactionId)
-            if (!transaction) return
-
-            const updated: AnyTransaction =
-                yield this.transactionService.updateTransaction({
-                    ...transaction,
-                    ...updates,
-                })
-
-            this.transactions = this.transactions.map((t) =>
-                t.id === transactionId ? updated : t
-            )
-        }
+        this.transactions = this.transactions.map((t) =>
+            t.id === id ? updated : t
+        )
     }
 
-    *delete(transactionId: string, subTransactionId?: string) {
-        if (subTransactionId) {
-            yield this.subTransactionService.delete(subTransactionId)
+    *delete(id: string) {
+        const transaction: AnyTransaction | undefined =
+            yield this.transactionService.getTransactionById(id)
+        if (!transaction) return
 
-            this.subTransactions = this.subTransactions.filter(
-                (s) => s.id !== subTransactionId
-            )
+        if (this.isChildTransaction(transaction)) {
+            yield this.transactionService.deleteChildTransaction(id)
+            this.transactions = this.transactions.filter((t) => t.id !== id)
         } else {
-            const relatedSubs = this.subTransactions.filter(
-                (s) => s.parentId === transactionId
-            )
-
-            yield Promise.all([
-                ...relatedSubs.map((sub) =>
-                    this.subTransactionService.delete(sub.id)
-                ),
-                this.transactionService.deleteTransaction(transactionId),
-            ])
-
+            yield this.transactionService.deleteParentTransaction(id)
             this.transactions = this.transactions.filter(
-                (t) => t.id !== transactionId
-            )
-            this.subTransactions = this.subTransactions.filter(
-                (s) => s.parentId !== transactionId
+                (t) => t.id !== id && t.parentId !== id
             )
         }
     }
 
-    *createSubExpense(transactionId: string, amount: number) {
+    *createChildExpense(transactionId: string, amount: number) {
         const transaction: AnyTransaction | undefined =
             yield this.transactionService.getTransactionById(transactionId)
         if (!transaction) return
 
-        // TODO: Differentiate between sources
         const exchangeRate =
             transaction.referenceAmount / -transaction.source.amount
-        const subTransaction: SubTransaction =
-            yield this.subTransactionService.add(
-                {
-                    type: 'sub-expense',
-                    id: crypto.randomUUID(),
-                    parentId: transactionId,
-                    time: transaction.time,
-                    description: transaction.description,
-                    referenceCurrencyCode: transaction.referenceCurrencyCode,
-                    category: transaction.category,
-                    labels: transaction.labels,
-                    source: {
-                        ...transaction.source,
-                        amount: -toSmallestUnit(amount),
-                    },
-                    referenceAmount: toSmallestUnit(amount * exchangeRate),
-                    capitalized: false,
-                    hide: false,
-                    comment: '',
-                },
-                transaction.source.amount
-            )
 
-        this.subTransactions.push(subTransaction)
+        const childTransaction: AnyTransaction =
+            yield this.transactionService.addChildTransaction({
+                ...transaction,
+                id: crypto.randomUUID(),
+                parentId: transactionId,
+                source: {
+                    ...transaction.source,
+                    amount: -toSmallestUnit(amount),
+                },
+                referenceAmount: toSmallestUnit(amount * exchangeRate),
+                capitalized: false,
+                hide: false,
+                comment: '',
+            })
+
+        this.transactions.push(childTransaction)
     }
 
     *resetCategory(categoryId: string) {
-        yield Promise.all([
-            this.transactionService.resetCategory(categoryId),
-            this.subTransactionService.resetCategory(categoryId),
-        ])
+        yield this.transactionService.resetCategory(categoryId)
 
         this.transactions = this.transactions.map((t) =>
             t.category === categoryId ? { ...t, category: '' } : t
         )
-        this.subTransactions = this.subTransactions.map((s) =>
-            s.category === categoryId ? { ...s, category: '' } : s
-        )
     }
 
-    *addTransaction(
+    *addParentTransaction(
         rawTransaction: Omit<AnyTransaction, 'createdAt' | 'updatedAt'>
     ) {
         const transaction: AnyTransaction =
-            yield this.transactionService.addTransaction(rawTransaction)
+            yield this.transactionService.addParentTransaction(rawTransaction)
 
         this.transactions.push(transaction)
     }

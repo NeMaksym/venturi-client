@@ -1,14 +1,10 @@
-import { AnyTransaction, SubTransaction } from '../../types'
+import { AnyTransaction } from '../../types'
 
 export type TransactionActionHandler<T> = (
     transactionId: string,
-    value: T,
-    subTransactionId?: string
+    value: T
 ) => void
 
-export type TransactionDeleteHandler = (
-    transactionId: string,
-    subTransactionId?: string
-) => void
+export type TransactionDeleteHandler = (transactionId: string) => void
 
-export type TransactionRow = AnyTransaction | SubTransaction
+export type TransactionRow = AnyTransaction

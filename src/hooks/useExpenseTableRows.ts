@@ -2,44 +2,38 @@ import { useMemo } from 'react'
 import { timeDesc, getTransactionSourceValue } from '../utils'
 import { RootStore } from '../stores'
 import { useStore } from '../context/StoreContext'
-import { AnyTransaction, SubTransaction } from '../types'
+import { AnyTransaction } from '../types'
 
 export function useExpenseTableRows() {
     const { transactionStore, expenseFilterStore } = useStore()
 
     return useMemo(() => {
-        const result: (AnyTransaction | SubTransaction)[] = []
+        const result: AnyTransaction[] = []
 
-        transactionStore.expensesInDateRange
+        const childExpensesMap = transactionStore.childExpensesMapInDateRange
+
+        transactionStore.parentExpensesInDateRange
             .slice()
             .sort(timeDesc)
-            .forEach((expense) => {
-                const subExpenses =
-                    transactionStore.subExpensesMapInDateRange.get(
-                        expense.id
-                    ) || []
+            .forEach((parentExpense) => {
+                const childExpenses =
+                    childExpensesMap.get(parentExpense.id) || []
 
-                if (shouldShowTransaction(expense, expenseFilterStore)) {
-                    result.push(expenseToTableRow(expense, subExpenses))
+                if (shouldShowTransaction(parentExpense, expenseFilterStore)) {
+                    result.push(expenseToTableRow(parentExpense, childExpenses))
                 }
 
-                for (const subExpense of subExpenses) {
-                    if (
-                        shouldShowSubTransaction(
-                            expense,
-                            subExpense,
-                            expenseFilterStore
-                        )
-                    ) {
-                        result.push(subExpenseToTableRow(subExpense))
+                for (const child of childExpenses) {
+                    if (shouldShowTransaction(child, expenseFilterStore)) {
+                        result.push(childToTableRow(child))
                     }
                 }
             })
 
         return result
     }, [
-        transactionStore.expensesInDateRange,
-        transactionStore.subExpensesMapInDateRange,
+        transactionStore.parentExpensesInDateRange,
+        transactionStore.childExpensesMapInDateRange,
         expenseFilterStore.sources,
         expenseFilterStore.categories,
         expenseFilterStore.labels,
@@ -77,71 +71,39 @@ function shouldShowTransaction(
     return true
 }
 
-function shouldShowSubTransaction(
-    transaction: AnyTransaction,
-    subTransaction: SubTransaction,
-    filters: RootStore['expenseFilterStore']
-) {
-    if (filters.sources.length > 0) {
-        const sourceValue = getTransactionSourceValue(transaction)
-        if (!filters.sources.includes(sourceValue)) {
-            return false
-        }
-    }
-
-    if (filters.categories.length > 0) {
-        if (
-            !subTransaction.category ||
-            !filters.categories.includes(subTransaction.category)
-        ) {
-            return false
-        }
-    }
-
-    if (filters.labels.length > 0) {
-        if (
-            !subTransaction.labels.some((label) =>
-                filters.labels.includes(label)
-            )
-        ) {
-            return false
-        }
-    }
-
-    return true
-}
-
+// TODO: See if converting to negative can be removed
 function expenseToTableRow(
     expense: AnyTransaction,
-    subExpenses: SubTransaction[]
+    children: AnyTransaction[]
 ): AnyTransaction {
-    const subExpensesSum = subExpenses.reduce(
-        (sum, subExpense) => sum + subExpense.source.amount,
+    const childrenSum = children.reduce(
+        (sum, child) => sum + child.source.amount,
         0
     )
-    const subExpensesRefSum = subExpenses.reduce(
-        (sum, sub) => sum + sub.referenceAmount,
+    const childrenRefSum = children.reduce(
+        (sum, child) => sum + child.referenceAmount,
         0
     )
-    const expenseAmount = expense.source.amount - subExpensesSum
-    const expenseRefAmount = expense.referenceAmount - subExpensesRefSum
+    const parentExpenseAmount = expense.source.amount - childrenSum
+    const parentExpenseRefAmount = expense.referenceAmount - childrenRefSum
 
     return {
         ...expense,
         source: {
             ...expense.source,
-            amount: -expenseAmount,
+            amount: -parentExpenseAmount,
         },
-        referenceAmount: expenseRefAmount,
+        referenceAmount: parentExpenseRefAmount,
     }
 }
 
-function subExpenseToTableRow(subExpense: SubTransaction): SubTransaction {
+// TODO: See if can be removed
+function childToTableRow(child: AnyTransaction): AnyTransaction {
     return {
-        ...subExpense,
+        ...child,
         source: {
-            ...subExpense.source,
-            amount: -subExpense.source.amount,
+            ...child.source,
+            amount: -child.source.amount,
         },
     }
 }

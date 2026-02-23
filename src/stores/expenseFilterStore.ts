@@ -97,9 +97,9 @@ export class ExpenseFilterStore {
     get sourceOptions() {
         const sourceMap = new Map<string, string>()
 
-        const allTransactions = this.root.transactionStore.allExpenses
+        const allParentExpenses = this.root.transactionStore.allParentExpenses
 
-        allTransactions.forEach((transaction) => {
+        allParentExpenses.forEach((transaction) => {
             const sourceValue = getTransactionSourceValue(transaction)
             if (!sourceMap.has(sourceValue)) {
                 sourceMap.set(
@@ -119,11 +119,6 @@ export class ExpenseFilterStore {
 
         this.root.transactionStore.allExpenses.forEach((transaction) => {
             transaction.labels.forEach((label) => {
-                labelCount[label] = (labelCount[label] || 0) + 1
-            })
-        })
-        this.root.transactionStore.subTransactions.forEach((subTransaction) => {
-            subTransaction.labels.forEach((label) => {
                 labelCount[label] = (labelCount[label] || 0) + 1
             })
         })

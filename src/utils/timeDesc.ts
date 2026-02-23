@@ -1,8 +1,5 @@
-import { AnyTransaction, SubTransaction } from '../types'
+import { AnyTransaction } from '../types'
 
-export const timeDesc = (
-    a: AnyTransaction | SubTransaction,
-    b: AnyTransaction | SubTransaction
-) => {
+export const timeDesc = (a: AnyTransaction, b: AnyTransaction) => {
     return b.time - a.time
 }

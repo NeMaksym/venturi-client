@@ -13,7 +13,6 @@ import {
 
 interface ContextMenuCellProps {
     transactionId: string
-    subTransactionId?: string
     comment: string
     isHidden: boolean
     isCapitalized: boolean
@@ -22,7 +21,6 @@ interface ContextMenuCellProps {
 
 export const ContextMenuCell: React.FC<ContextMenuCellProps> = ({
     transactionId,
-    subTransactionId,
     comment,
     isHidden,
     isCapitalized,
@@ -68,15 +66,11 @@ export const ContextMenuCell: React.FC<ContextMenuCellProps> = ({
                 isHidden={isHidden}
                 isCapitalized={isCapitalized}
                 onHideClick={() => {
-                    onHideChange(transactionId, !isHidden, subTransactionId)
+                    onHideChange(transactionId, !isHidden)
                     closeContextMenu()
                 }}
                 onCapitalizeClick={() => {
-                    onCapitalizeChange(
-                        transactionId,
-                        !isCapitalized,
-                        subTransactionId
-                    )
+                    onCapitalizeChange(transactionId, !isCapitalized)
                     closeContextMenu()
                 }}
                 onCommentClick={() => {
@@ -99,7 +93,7 @@ export const ContextMenuCell: React.FC<ContextMenuCellProps> = ({
                 open={commentDialogOpen}
                 comment={comment}
                 onSubmit={(comment: string) => {
-                    onCommentChange(transactionId, comment, subTransactionId)
+                    onCommentChange(transactionId, comment)
                     setCommentDialogOpen(false)
                 }}
                 onClose={() => setCommentDialogOpen(false)}
@@ -108,7 +102,7 @@ export const ContextMenuCell: React.FC<ContextMenuCellProps> = ({
             <DeleteConfirmationDialog
                 open={deleteDialogOpen}
                 onConfirm={() => {
-                    onDelete(transactionId, subTransactionId)
+                    onDelete(transactionId)
                     setDeleteDialogOpen(false)
                 }}
                 onCancel={() => setDeleteDialogOpen(false)}

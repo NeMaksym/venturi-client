@@ -8,7 +8,14 @@ import {
     isValidUnixMillis,
 } from '../../utils'
 
+type UpdatableFields = Pick<
+    AnyTransaction,
+    'category' | 'labels' | 'comment' | 'hide' | 'capitalized'
+>
+
 export class TransactionService {
+    // --- Validation ---
+
     #validateType(transaction: AnyTransaction): void {
         if (transaction.type === 'expense') {
             if (transaction.source.amount >= 0) {
@@ -31,16 +38,25 @@ export class TransactionService {
         if (!source.account && !source.card) {
             throw new Error('Bank transaction should have account and/or card')
         }
+
         if (source.account) {
-            if (!isIBAN(source.account.value)) {
-                throw new Error('Invalid IBAN')
+            switch (source.account.type) {
+                case 'iban':
+                    if (!isIBAN(source.account.value)) {
+                        throw new Error('Invalid IBAN')
+                    }
             }
         }
+
         if (source.card) {
-            if (!isFourDigitString(source.card.value)) {
-                throw new Error('Invalid last four digits')
+            switch (source.card.type) {
+                case 'lastFour':
+                    if (!isFourDigitString(source.card.value)) {
+                        throw new Error('Invalid last four digits')
+                    }
             }
         }
+
         if (source.operation) {
             if (source.operation.amount <= 0) {
                 throw new Error('Transaction operation amount must be positive')
@@ -57,6 +73,17 @@ export class TransactionService {
         }
     }
 
+    #validateSource(source: AnyTransaction['source']): void {
+        switch (source.type) {
+            case 'bank':
+                this.#validateBankSource(source)
+                break
+            case 'cash':
+                this.#validateCashSource(source)
+                break
+        }
+    }
+
     #validateTransaction(transaction: AnyTransaction): void {
         this.#validateType(transaction)
 
@@ -68,45 +95,26 @@ export class TransactionService {
             throw new Error('Transaction referenceAmount must be positive')
         }
 
-        switch (transaction.source.type) {
-            case 'bank':
-                this.#validateBankSource(transaction.source)
-                break
-            case 'cash':
-                this.#validateCashSource(transaction.source)
-                break
+        this.#validateSource(transaction.source)
+    }
+
+    #validateParentTransaction(transaction: AnyTransaction): void {
+        this.#validateTransaction(transaction)
+
+        if (transaction.parentId) {
+            throw new Error('Parent transaction must not have parentId')
         }
     }
 
-    // TODO: Improve
-    async transactionExists(
-        transaction:
-            | AnyTransaction
-            | Omit<AnyTransaction, 'createdAt' | 'updatedAt'>
-    ): Promise<boolean> {
-        if (transaction.source.type === 'cash') return false
+    #validateChildTransaction(transaction: AnyTransaction): void {
+        this.#validateTransaction(transaction)
 
-        const db = await DBProvider.instance.db
-        const tx = db.transaction(Stores.TRANSACTIONS, 'readonly')
-        const store = tx.objectStore(Stores.TRANSACTIONS)
-        const timeIndex = store.index('time')
-
-        try {
-            const transactionsAtSameTime = await timeIndex.getAll(
-                transaction.time
-            )
-            return transactionsAtSameTime.some(
-                (dbTransaction) =>
-                    dbTransaction.source.type === 'bank' &&
-                    transaction.source.type === 'bank' &&
-                    dbTransaction.source.bankId === transaction.source.bankId &&
-                    dbTransaction.source.amount === transaction.source.amount
-            )
-        } catch (error) {
-            console.error('Failed to check if transaction exists:', error)
-            throw error
+        if (!transaction.parentId) {
+            throw new Error('Child transaction must have parentId')
         }
     }
+
+    // --- Read ---
 
     async getAllTransactions(): Promise<AnyTransaction[]> {
         const db = await DBProvider.instance.db
@@ -134,7 +142,69 @@ export class TransactionService {
         }
     }
 
-    async addTransaction(
+    async getByParentId(parentId: string): Promise<AnyTransaction[]> {
+        const db = await DBProvider.instance.db
+        const tx = db.transaction(Stores.TRANSACTIONS, 'readonly')
+        const store = tx.objectStore(Stores.TRANSACTIONS)
+        const parentIdIndex = store.index('parentId')
+
+        try {
+            return await parentIdIndex.getAll(parentId)
+        } catch (error) {
+            console.error('Failed to get transactions by parent ID:', error)
+            throw error
+        }
+    }
+
+    // --- Dedup ---
+
+    async transactionExists(
+        transaction:
+            | AnyTransaction
+            | Omit<AnyTransaction, 'createdAt' | 'updatedAt'>
+    ): Promise<boolean> {
+        const db = await DBProvider.instance.db
+        const tx = db.transaction(Stores.TRANSACTIONS, 'readonly')
+        const store = tx.objectStore(Stores.TRANSACTIONS)
+        const timeIndex = store.index('time')
+
+        try {
+            const transactionsAtSameTime = await timeIndex.getAll(
+                transaction.time
+            )
+            return transactionsAtSameTime.some((dbTransaction) => {
+                switch (transaction.source.type) {
+                    case 'bank':
+                        return (
+                            dbTransaction.source.type === 'bank' &&
+                            dbTransaction.source.bankId ===
+                                transaction.source.bankId &&
+                            dbTransaction.source.amount ===
+                                transaction.source.amount &&
+                            dbTransaction.source.currencyCode ===
+                                transaction.source.currencyCode
+                        )
+                    case 'cash':
+                        return (
+                            dbTransaction.source.type === 'cash' &&
+                            dbTransaction.source.currencyCode ===
+                                transaction.source.currencyCode &&
+                            dbTransaction.source.amount ===
+                                transaction.source.amount &&
+                            dbTransaction.description ===
+                                transaction.description
+                        )
+                }
+            })
+        } catch (error) {
+            console.error('Failed to check if transaction exists:', error)
+            throw error
+        }
+    }
+
+    // --- Add ---
+
+    async addParentTransaction(
         transaction: Omit<AnyTransaction, 'createdAt' | 'updatedAt'>
     ): Promise<AnyTransaction> {
         const transactionWithTimestamps: AnyTransaction = {
@@ -143,7 +213,7 @@ export class TransactionService {
             updatedAt: Date.now(),
         }
 
-        this.#validateTransaction(transactionWithTimestamps)
+        this.#validateParentTransaction(transactionWithTimestamps)
 
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.TRANSACTIONS, 'readwrite')
@@ -158,29 +228,122 @@ export class TransactionService {
         }
     }
 
-    async updateTransaction(
-        transaction: AnyTransaction
+    // TODO: Validate parent exists
+    // TODO: Validate sum constraint
+    async addChildTransaction(
+        subTransaction: Omit<AnyTransaction, 'createdAt' | 'updatedAt'>
     ): Promise<AnyTransaction> {
-        const updatedTransaction: AnyTransaction = {
-            ...transaction,
+        const subTransactionWithTimestamps: AnyTransaction = {
+            ...subTransaction,
+            createdAt: Date.now(),
             updatedAt: Date.now(),
         }
-        this.#validateTransaction(updatedTransaction)
+
+        this.#validateChildTransaction(subTransactionWithTimestamps)
 
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.TRANSACTIONS, 'readwrite')
         const store = tx.objectStore(Stores.TRANSACTIONS)
 
         try {
-            await store.put(updatedTransaction)
-            return updatedTransaction
+            await store.add(subTransactionWithTimestamps)
+            return subTransactionWithTimestamps
+        } catch (error) {
+            console.error('Failed to add sub-transaction:', error)
+            throw error
+        }
+    }
+
+    // --- Update (whitelisted fields) ---
+
+    async updateParentTransaction(
+        id: string,
+        updates: Partial<UpdatableFields>
+    ): Promise<AnyTransaction> {
+        const existing = await this.getTransactionById(id)
+        if (!existing) {
+            throw new Error(`Transaction not found: ${id}`)
+        }
+
+        const updated: AnyTransaction = {
+            ...existing,
+            ...updates,
+            updatedAt: Date.now(),
+        }
+
+        this.#validateParentTransaction(updated)
+
+        const db = await DBProvider.instance.db
+        const tx = db.transaction(Stores.TRANSACTIONS, 'readwrite')
+        const store = tx.objectStore(Stores.TRANSACTIONS)
+
+        try {
+            await store.put(updated)
+            return updated
         } catch (error) {
             console.error('Failed to update transaction:', error)
             throw error
         }
     }
 
-    async deleteTransaction(id: string): Promise<void> {
+    async updateChildTransaction(
+        id: string,
+        updates: Partial<UpdatableFields>
+    ): Promise<AnyTransaction> {
+        const existing = await this.getTransactionById(id)
+        if (!existing) {
+            throw new Error(`Sub-transaction not found: ${id}`)
+        }
+        if (existing.parentId === null) {
+            throw new Error(
+                'Cannot use updateChildTransaction on a parent transaction'
+            )
+        }
+
+        const updated: AnyTransaction = {
+            ...existing,
+            ...updates,
+            updatedAt: Date.now(),
+        }
+
+        this.#validateChildTransaction(updated)
+
+        const db = await DBProvider.instance.db
+        const tx = db.transaction(Stores.TRANSACTIONS, 'readwrite')
+        const store = tx.objectStore(Stores.TRANSACTIONS)
+
+        try {
+            await store.put(updated)
+            return updated
+        } catch (error) {
+            console.error('Failed to update sub-transaction:', error)
+            throw error
+        }
+    }
+
+    // --- Delete ---
+
+    async deleteParentTransaction(id: string): Promise<void> {
+        const db = await DBProvider.instance.db
+
+        const children = await this.getByParentId(id)
+
+        const tx = db.transaction(Stores.TRANSACTIONS, 'readwrite')
+        const store = tx.objectStore(Stores.TRANSACTIONS)
+
+        try {
+            await Promise.all([
+                ...children.map((child) => store.delete(child.id)),
+                store.delete(id),
+            ])
+            await tx.done
+        } catch (error) {
+            console.error('Failed to delete transaction:', error)
+            throw error
+        }
+    }
+
+    async deleteChildTransaction(id: string): Promise<void> {
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.TRANSACTIONS, 'readwrite')
         const store = tx.objectStore(Stores.TRANSACTIONS)
@@ -188,10 +351,12 @@ export class TransactionService {
         try {
             await store.delete(id)
         } catch (error) {
-            console.error('Failed to delete transaction:', error)
+            console.error('Failed to delete sub-transaction:', error)
             throw error
         }
     }
+
+    // --- Category ---
 
     async resetCategory(categoryId: string): Promise<void> {
         const db = await DBProvider.instance.db

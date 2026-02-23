@@ -66,7 +66,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
                             <EmptyBodyRow colSpan={TABLE_COLUMNS.length} />
                         ) : (
                             rows.map((row) =>
-                                'parentId' in row ? (
+                                row.parentId !== null ? (
                                     <SubTransactionBodyRow
                                         key={row.id}
                                         data={row}

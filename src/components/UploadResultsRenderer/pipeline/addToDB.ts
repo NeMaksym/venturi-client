@@ -37,10 +37,10 @@ export const addToDB: AddToDB = async ({
 
     await Promise.all([
         ...expensesToAdd.map((expense) =>
-            transactionStore.addTransaction(expense)
+            transactionStore.addParentTransaction(expense)
         ),
         ...incomesToAdd.map((income) =>
-            transactionStore.addTransaction(income)
+            transactionStore.addParentTransaction(income)
         ),
     ])
 

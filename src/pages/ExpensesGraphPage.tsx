@@ -29,10 +29,7 @@ const ExpensesGraphPage: React.FC = () => {
 
         return (
             <YearGraph
-                data={[
-                    ...transactionStore.allExpenses,
-                    ...transactionStore.allSubExpenses,
-                ].reduce(
+                data={transactionStore.allExpenses.reduce(
                     (acc, expense) => {
                         const category =
                             expenseCategoryStore.categoriesMap[
