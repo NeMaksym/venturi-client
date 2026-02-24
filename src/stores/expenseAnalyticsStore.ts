@@ -9,11 +9,18 @@ export class ExpenseAnalyticsStore {
     private readonly root: RootStore
     private readonly transactionService: TransactionService
 
-    loading = false
-    error: string | null = null
-    expenses: AnyTransaction[] = []
+    // --- Yearly chart state ---
+    yearlySelectedYear: number = new Date().getFullYear()
+    yearlyExpenses: AnyTransaction[] = []
+    yearlyLoading = false
+    yearlyError: string | null = null
 
-    selectedYear: number = new Date().getFullYear()
+    // --- Monthly chart state ---
+    monthlySelectedYear: number = new Date().getFullYear()
+    monthlySelectedMonth: number = new Date().getMonth()
+    monthlyExpenses: AnyTransaction[] = []
+    monthlyLoading = false
+    monthlyError: string | null = null
 
     constructor(root: RootStore, transactionService: TransactionService) {
         makeAutoObservable(this, {}, { autoBind: true })
@@ -21,15 +28,22 @@ export class ExpenseAnalyticsStore {
         this.transactionService = transactionService
 
         reaction(
-            () => this.selectedYear,
-            () => this.loadExpenses()
+            () => this.yearlySelectedYear,
+            () => this.loadYearlyExpenses()
+        )
+
+        reaction(
+            () => [this.monthlySelectedYear, this.monthlySelectedMonth],
+            () => this.loadMonthlyExpenses()
         )
     }
+
+    // --- Yearly computed ---
 
     get yearlyCategoryBreakdown(): Record<string, number[]> {
         const categoriesMap = this.root.expenseCategoryStore.categoriesMap
 
-        return this.expenses.reduce(
+        return this.yearlyExpenses.reduce(
             (acc, expense) => {
                 const category =
                     categoriesMap[expense.category] ?? 'Uncategorized'
@@ -51,18 +65,52 @@ export class ExpenseAnalyticsStore {
         )
     }
 
-    setSelectedYear(year: number) {
-        this.selectedYear = year
+    // --- Monthly computed ---
+
+    get monthlyCategoryBreakdown(): { label: string; value: number }[] {
+        const categoriesMap = this.root.expenseCategoryStore.categoriesMap
+        const totals: Record<string, number> = {}
+
+        for (const expense of this.monthlyExpenses) {
+            const category = categoriesMap[expense.category] ?? 'Uncategorized'
+            const refAmount = fromSmallestUnit(expense.referenceAmount)
+            totals[category] = (totals[category] ?? 0) + refAmount
+        }
+
+        return Object.entries(totals).map(([label, value]) => ({
+            label,
+            value,
+        }))
     }
 
-    *loadExpenses() {
-        this.loading = true
-        this.error = null
+    // --- Actions ---
+
+    setYearlySelectedYear(year: number) {
+        this.yearlySelectedYear = year
+    }
+
+    setMonthlySelectedYear(year: number) {
+        this.monthlySelectedYear = year
+    }
+
+    setMonthlySelectedMonth(month: number) {
+        this.monthlySelectedMonth = month
+    }
+
+    // --- Data loading ---
+
+    *loadYearlyExpenses() {
+        this.yearlyLoading = true
+        this.yearlyError = null
 
         try {
-            const startOfYear = new Date(this.selectedYear, 0, 1).getTime()
+            const startOfYear = new Date(
+                this.yearlySelectedYear,
+                0,
+                1
+            ).getTime()
             const endOfYear =
-                new Date(this.selectedYear + 1, 0, 1).getTime() - 1
+                new Date(this.yearlySelectedYear + 1, 0, 1).getTime() - 1
 
             const expenses: AnyTransaction[] =
                 yield this.transactionService.getExpensesByDateRange(
@@ -70,14 +118,48 @@ export class ExpenseAnalyticsStore {
                     endOfYear
                 )
 
-            this.expenses = expenses
+            this.yearlyExpenses = expenses
         } catch (e) {
-            this.error =
+            this.yearlyError =
                 e instanceof Error
                     ? e.message
-                    : 'Failed to load expense analytics'
+                    : 'Failed to load yearly expenses'
         } finally {
-            this.loading = false
+            this.yearlyLoading = false
+        }
+    }
+
+    *loadMonthlyExpenses() {
+        this.monthlyLoading = true
+        this.monthlyError = null
+
+        try {
+            const startOfMonth = new Date(
+                this.monthlySelectedYear,
+                this.monthlySelectedMonth,
+                1
+            ).getTime()
+            const endOfMonth =
+                new Date(
+                    this.monthlySelectedYear,
+                    this.monthlySelectedMonth + 1,
+                    1
+                ).getTime() - 1
+
+            const expenses: AnyTransaction[] =
+                yield this.transactionService.getExpensesByDateRange(
+                    startOfMonth,
+                    endOfMonth
+                )
+
+            this.monthlyExpenses = expenses
+        } catch (e) {
+            this.monthlyError =
+                e instanceof Error
+                    ? e.message
+                    : 'Failed to load monthly expenses'
+        } finally {
+            this.monthlyLoading = false
         }
     }
 }
