@@ -1,8 +1,4 @@
-import { bankProvider } from './bankProvider'
+import './monobank'
+import './privatBank'
 
-import { monobankManifest } from './monobank'
-import { privatBankManifest } from './privatBank'
-
-bankProvider.add('hMDykC', monobankManifest).add('Hr09x8', privatBankManifest)
-
-export * from './bankProvider'
+export { bankProvider } from './bankProvider'
