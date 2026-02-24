@@ -7,7 +7,7 @@ import { YearGraph, PageLayout } from '../components'
 import { fromSmallestUnit } from '../utils/formatAmount'
 import { useStore } from '../context/StoreContext'
 
-const ExpensesGraphPage: React.FC = () => {
+const ExpensesAnalyticsPage: React.FC = () => {
     const { expenseCategoryStore, transactionStore } = useStore()
 
     const renderContent = () => {
@@ -61,7 +61,7 @@ const ExpensesGraphPage: React.FC = () => {
         )
     }
 
-    return <PageLayout title="Graph">{renderContent()}</PageLayout>
+    return <PageLayout title="Analytics">{renderContent()}</PageLayout>
 }
 
-export { ExpensesGraphPage }
+export { ExpensesAnalyticsPage }

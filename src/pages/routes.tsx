@@ -1,15 +1,15 @@
 import { ExpensesTransactionsPage } from './ExpensesTransactionsPage'
 import { UploadPage } from './UploadPage'
-import { ExpensesConfigPage } from './ExpensesConfigPage'
-import { ExpensesGraphPage } from './ExpensesGraphPage'
+import { ExpensesSettingsPage } from './ExpensesSettingsPage'
+import { ExpensesAnalyticsPage } from './ExpensesAnalyticsPage'
 import { DebugPage } from './DebugPage'
 
 export const enum PagePath {
     UPLOAD = '/upload',
     EXPENSES = '/expenses',
     EXPENSES_TRANSACTIONS = '/expenses/transactions',
-    EXPENSES_GRAPH = '/expenses/graph',
-    EXPENSES_CONFIG = '/expenses/config',
+    EXPENSES_ANALYTICS = '/expenses/analytics',
+    EXPENSES_SETTINGS = '/expenses/settings',
     DEBUG = '/debug',
 }
 export interface PageRoute {
@@ -33,14 +33,14 @@ export const expensesPages: PageRoute[] = [
         path: PagePath.EXPENSES_TRANSACTIONS,
     },
     {
-        element: <ExpensesGraphPage />,
-        name: 'Graph',
-        path: PagePath.EXPENSES_GRAPH,
+        element: <ExpensesAnalyticsPage />,
+        name: 'Analytics',
+        path: PagePath.EXPENSES_ANALYTICS,
     },
     {
-        element: <ExpensesConfigPage />,
-        name: 'Configuration',
-        path: PagePath.EXPENSES_CONFIG,
+        element: <ExpensesSettingsPage />,
+        name: 'Settings',
+        path: PagePath.EXPENSES_SETTINGS,
     },
 ]
 
