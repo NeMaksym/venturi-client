@@ -1,9 +1,0 @@
----
-globs: *.ts,*.tsx
-alwaysApply: false
----
-
--   Use `makeAutoObservable` for creating MobX stores.
--   Use generators for asynchronous actions.
--   Consider all component are wrapped with "observer" HOC because Babel plugin ("mobx-react-observer") is used.
--   Do not use 'observer' HOC
