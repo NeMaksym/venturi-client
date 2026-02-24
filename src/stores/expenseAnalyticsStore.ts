@@ -46,26 +46,28 @@ export class ExpenseAnalyticsStore {
     get yearlyCategoryBreakdown(): Record<string, number[]> {
         const categoriesMap = this.root.expenseCategoryStore.categoriesMap
 
-        return this.yearlyExpenses.reduce(
-            (acc, expense) => {
-                const category =
-                    categoriesMap[expense.category] ?? 'Uncategorized'
+        return this.yearlyExpenses
+            .filter((expense) => !expense.hide)
+            .reduce(
+                (acc, expense) => {
+                    const category =
+                        categoriesMap[expense.category] ?? 'Uncategorized'
 
-                if (acc[category] === undefined) {
-                    acc[category] = Array(12).fill(0)
-                }
+                    if (acc[category] === undefined) {
+                        acc[category] = Array(12).fill(0)
+                    }
 
-                const refAmount = fromSmallestUnit(expense.referenceAmount)
-                const month = new Date(expense.time).getMonth()
+                    const refAmount = fromSmallestUnit(expense.referenceAmount)
+                    const month = new Date(expense.time).getMonth()
 
-                if (acc[category][month] !== undefined) {
-                    acc[category][month] += refAmount
-                }
+                    if (acc[category][month] !== undefined) {
+                        acc[category][month] += refAmount
+                    }
 
-                return acc
-            },
-            {} as Record<string, number[]>
-        )
+                    return acc
+                },
+                {} as Record<string, number[]>
+            )
     }
 
     // --- Monthly computed ---
@@ -75,6 +77,8 @@ export class ExpenseAnalyticsStore {
         const totals: Record<string, number> = {}
 
         for (const expense of this.monthlyExpenses) {
+            if (expense.hide) continue
+
             const category = categoriesMap[expense.category] ?? 'Uncategorized'
             const refAmount = fromSmallestUnit(expense.referenceAmount)
             totals[category] = (totals[category] ?? 0) + refAmount
