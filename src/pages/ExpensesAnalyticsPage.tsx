@@ -6,6 +6,8 @@ import Alert from '@mui/material/Alert'
 import Typography from '@mui/material/Typography'
 import Tooltip from '@mui/material/Tooltip'
 import Divider from '@mui/material/Divider'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 
 import {
@@ -41,6 +43,7 @@ const ExpensesAnalyticsPage: React.FC = () => {
     const { expenseAnalyticsStore } = useStore()
 
     useEffect(() => {
+        expenseAnalyticsStore.loadEarliestYear()
         expenseAnalyticsStore.loadYearlyExpenses()
         expenseAnalyticsStore.loadMonthlyExpenses()
     }, [])
@@ -52,6 +55,21 @@ const ExpensesAnalyticsPage: React.FC = () => {
                 <Tooltip title="Expenses grouped by category across all months of the selected year">
                     <InfoOutlinedIcon fontSize="small" color="action" />
                 </Tooltip>
+                <Select
+                    size="small"
+                    value={expenseAnalyticsStore.yearlySelectedYear}
+                    onChange={(e) =>
+                        expenseAnalyticsStore.setYearlySelectedYear(
+                            e.target.value as number
+                        )
+                    }
+                >
+                    {expenseAnalyticsStore.availableYears.map((year) => (
+                        <MenuItem key={year} value={year}>
+                            {year}
+                        </MenuItem>
+                    ))}
+                </Select>
             </Stack>
             <ChartLoader
                 loading={expenseAnalyticsStore.yearlyLoading}

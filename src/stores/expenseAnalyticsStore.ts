@@ -22,6 +22,9 @@ export class ExpenseAnalyticsStore {
     monthlyLoading = false
     monthlyError: string | null = null
 
+    // --- Shared ---
+    earliestYear: number = new Date().getFullYear()
+
     constructor(root: RootStore, transactionService: TransactionService) {
         makeAutoObservable(this, {}, { autoBind: true })
         this.root = root
@@ -97,7 +100,26 @@ export class ExpenseAnalyticsStore {
         this.monthlySelectedMonth = month
     }
 
+    // --- Computed ---
+
+    get availableYears(): number[] {
+        const currentYear = new Date().getFullYear()
+        const years: number[] = []
+        for (let y = currentYear; y >= this.earliestYear; y--) {
+            years.push(y)
+        }
+        return years
+    }
+
     // --- Data loading ---
+
+    *loadEarliestYear() {
+        const earliest: number | null =
+            yield this.transactionService.getEarliestTransactionTime()
+        if (earliest) {
+            this.earliestYear = new Date(earliest).getFullYear()
+        }
+    }
 
     *loadYearlyExpenses() {
         this.yearlyLoading = true

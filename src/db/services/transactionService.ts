@@ -129,6 +129,21 @@ export class TransactionService {
         }
     }
 
+    // null if no transactions
+    async getEarliestTransactionTime(): Promise<number | null> {
+        const db = await DBProvider.instance.db
+        const tx = db.transaction(Stores.TRANSACTIONS, 'readonly')
+        const index = tx.objectStore(Stores.TRANSACTIONS).index('time')
+
+        try {
+            const cursor = await index.openCursor()
+            return cursor ? cursor.value.time : null
+        } catch (error) {
+            console.error('Failed to get earliest transaction time:', error)
+            throw error
+        }
+    }
+
     async getTransactionsByDateRange(
         startTime: number,
         endTime: number
