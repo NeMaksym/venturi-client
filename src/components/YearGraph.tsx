@@ -23,7 +23,6 @@ const xLabels = [
 export const YearGraph: React.FC<YearGraphProps> = ({ data }) => {
     return (
         <LineChart
-            width={800}
             height={350}
             series={Object.entries(data).map(([category, amounts]) => ({
                 id: category,
