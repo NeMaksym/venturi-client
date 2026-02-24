@@ -3,7 +3,7 @@ import Box from '@mui/material/Box'
 import CircularProgress from '@mui/material/CircularProgress'
 import Alert from '@mui/material/Alert'
 
-import { YearGraph, PageLayout } from '../components'
+import { YearlyCategoryChart, PageLayout } from '../components'
 import { fromSmallestUnit } from '../utils/formatAmount'
 import { useStore } from '../context/StoreContext'
 
@@ -28,7 +28,7 @@ const ExpensesAnalyticsPage: React.FC = () => {
         }
 
         return (
-            <YearGraph
+            <YearlyCategoryChart
                 data={transactionStore.allExpenses.reduce(
                     (acc, expense) => {
                         const category =

@@ -1,7 +1,7 @@
 import React from 'react'
 import { LineChart } from '@mui/x-charts/LineChart'
 
-interface YearGraphProps {
+interface YearlyCategoryChartProps {
     data: Record<string, number[]>
 }
 
@@ -20,7 +20,9 @@ const xLabels = [
     'Dec',
 ]
 
-export const YearGraph: React.FC<YearGraphProps> = ({ data }) => {
+export const YearlyCategoryChart: React.FC<YearlyCategoryChartProps> = ({
+    data,
+}) => {
     return (
         <LineChart
             height={350}
