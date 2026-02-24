@@ -1,17 +1,20 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import Box from '@mui/material/Box'
 import CircularProgress from '@mui/material/CircularProgress'
 import Alert from '@mui/material/Alert'
 
 import { YearlyCategoryChart, PageLayout } from '../components'
-import { fromSmallestUnit } from '../utils/formatAmount'
 import { useStore } from '../context/StoreContext'
 
 const ExpensesAnalyticsPage: React.FC = () => {
-    const { expenseCategoryStore, transactionStore } = useStore()
+    const { expenseAnalyticsStore } = useStore()
+
+    useEffect(() => {
+        expenseAnalyticsStore.loadExpenses()
+    }, [])
 
     const renderContent = () => {
-        if (transactionStore.loading) {
+        if (expenseAnalyticsStore.loading) {
             return (
                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                     <CircularProgress />
@@ -19,44 +22,17 @@ const ExpensesAnalyticsPage: React.FC = () => {
             )
         }
 
-        if (transactionStore.error) {
+        if (expenseAnalyticsStore.error) {
             return (
                 <Alert severity="error">
-                    Error loading expense data: {transactionStore.error}
+                    Error loading expense data: {expenseAnalyticsStore.error}
                 </Alert>
             )
         }
 
         return (
             <YearlyCategoryChart
-                data={transactionStore.allExpenses.reduce(
-                    (acc, expense) => {
-                        const category =
-                            expenseCategoryStore.categoriesMap[
-                                expense.category
-                            ] ?? 'Uncategorized'
-
-                        if (!category) {
-                            return acc
-                        }
-
-                        if (acc[category] === undefined) {
-                            acc[category] = Array(12).fill(0)
-                        }
-
-                        const refAmount = fromSmallestUnit(
-                            expense.referenceAmount
-                        )
-                        const month = new Date(expense.time).getMonth()
-
-                        if (acc[category][month] !== undefined) {
-                            acc[category][month] += refAmount
-                        }
-
-                        return acc
-                    },
-                    {} as Record<string, number[]>
-                )}
+                data={expenseAnalyticsStore.yearlyCategoryBreakdown}
             />
         )
     }

@@ -129,6 +129,33 @@ export class TransactionService {
         }
     }
 
+    async getTransactionsByDateRange(
+        startTime: number,
+        endTime: number
+    ): Promise<AnyTransaction[]> {
+        const db = await DBProvider.instance.db
+        const tx = db.transaction(Stores.TRANSACTIONS, 'readonly')
+        const index = tx.objectStore(Stores.TRANSACTIONS).index('time')
+
+        try {
+            return await index.getAll(IDBKeyRange.bound(startTime, endTime))
+        } catch (error) {
+            console.error('Failed to get transactions by date range:', error)
+            throw error
+        }
+    }
+
+    async getExpensesByDateRange(
+        startTime: number,
+        endTime: number
+    ): Promise<AnyTransaction[]> {
+        const transactions = await this.getTransactionsByDateRange(
+            startTime,
+            endTime
+        )
+        return transactions.filter((t) => t.type === 'expense')
+    }
+
     async getTransactionById(id: string): Promise<AnyTransaction | undefined> {
         const db = await DBProvider.instance.db
         const tx = db.transaction(Stores.TRANSACTIONS, 'readonly')
