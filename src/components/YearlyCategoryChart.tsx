@@ -3,6 +3,7 @@ import { LineChart } from '@mui/x-charts/LineChart'
 
 interface YearlyCategoryChartProps {
     data: Record<string, number[]>
+    height: number
 }
 
 const xLabels = [
@@ -22,10 +23,11 @@ const xLabels = [
 
 export const YearlyCategoryChart: React.FC<YearlyCategoryChartProps> = ({
     data,
+    height,
 }) => {
     return (
         <LineChart
-            height={350}
+            height={height}
             series={Object.entries(data).map(([category, amounts]) => ({
                 id: category,
                 data: amounts,

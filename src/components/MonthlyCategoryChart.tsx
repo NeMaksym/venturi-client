@@ -3,14 +3,16 @@ import { PieChart } from '@mui/x-charts/PieChart'
 
 interface MonthlyCategoryChartProps {
     data: { label: string; value: number }[]
+    height: number
 }
 
 export const MonthlyCategoryChart: React.FC<MonthlyCategoryChartProps> = ({
     data,
+    height,
 }) => {
     return (
         <PieChart
-            height={350}
+            height={height}
             series={[
                 {
                     data,

@@ -17,14 +17,24 @@ import {
 } from '../components'
 import { useStore } from '../context/StoreContext'
 
+const CHART_HEIGHT = 350
+
 const ChartLoader: React.FC<{
     loading: boolean
     error: string | null
+    height: number
     children: React.ReactNode
-}> = ({ loading, error, children }) => {
+}> = ({ loading, error, height, children }) => {
     if (loading) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height,
+                }}
+            >
                 <CircularProgress />
             </Box>
         )
@@ -74,9 +84,11 @@ const ExpensesAnalyticsPage: React.FC = () => {
             <ChartLoader
                 loading={expenseAnalyticsStore.yearlyLoading}
                 error={expenseAnalyticsStore.yearlyError}
+                height={CHART_HEIGHT}
             >
                 <YearlyCategoryChart
                     data={expenseAnalyticsStore.yearlyCategoryBreakdown}
+                    height={CHART_HEIGHT}
                 />
             </ChartLoader>
 
@@ -91,9 +103,11 @@ const ExpensesAnalyticsPage: React.FC = () => {
             <ChartLoader
                 loading={expenseAnalyticsStore.monthlyLoading}
                 error={expenseAnalyticsStore.monthlyError}
+                height={CHART_HEIGHT}
             >
                 <MonthlyCategoryChart
                     data={expenseAnalyticsStore.monthlyCategoryBreakdown}
+                    height={CHART_HEIGHT}
                 />
             </ChartLoader>
         </PageLayout>
