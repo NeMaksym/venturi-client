@@ -19,6 +19,21 @@ import { useStore } from '../context/StoreContext'
 
 const CHART_HEIGHT = 350
 
+const MONTH_LABELS = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+]
+
 const ChartLoader: React.FC<{
     loading: boolean
     error: string | null
@@ -99,6 +114,36 @@ const ExpensesAnalyticsPage: React.FC = () => {
                 <Tooltip title="Expense distribution by category for the selected month">
                     <InfoOutlinedIcon fontSize="small" color="action" />
                 </Tooltip>
+                <Select
+                    size="small"
+                    value={expenseAnalyticsStore.monthlySelectedYear}
+                    onChange={(e) =>
+                        expenseAnalyticsStore.setMonthlySelectedYear(
+                            e.target.value as number
+                        )
+                    }
+                >
+                    {expenseAnalyticsStore.availableYears.map((year) => (
+                        <MenuItem key={year} value={year}>
+                            {year}
+                        </MenuItem>
+                    ))}
+                </Select>
+                <Select
+                    size="small"
+                    value={expenseAnalyticsStore.monthlySelectedMonth}
+                    onChange={(e) =>
+                        expenseAnalyticsStore.setMonthlySelectedMonth(
+                            e.target.value as number
+                        )
+                    }
+                >
+                    {MONTH_LABELS.map((label, index) => (
+                        <MenuItem key={index} value={index}>
+                            {label}
+                        </MenuItem>
+                    ))}
+                </Select>
             </Stack>
             <ChartLoader
                 loading={expenseAnalyticsStore.monthlyLoading}
