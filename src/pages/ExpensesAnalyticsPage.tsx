@@ -1,7 +1,12 @@
 import React, { useEffect } from 'react'
 import Box from '@mui/material/Box'
+import Stack from '@mui/material/Stack'
 import CircularProgress from '@mui/material/CircularProgress'
 import Alert from '@mui/material/Alert'
+import Typography from '@mui/material/Typography'
+import Tooltip from '@mui/material/Tooltip'
+import Divider from '@mui/material/Divider'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 
 import {
     YearlyCategoryChart,
@@ -42,6 +47,12 @@ const ExpensesAnalyticsPage: React.FC = () => {
 
     return (
         <PageLayout title="Analytics">
+            <Stack direction="row" alignItems="center" spacing={1}>
+                <Typography variant="h6">Yearly Overview</Typography>
+                <Tooltip title="Expenses grouped by category across all months of the selected year">
+                    <InfoOutlinedIcon fontSize="small" color="action" />
+                </Tooltip>
+            </Stack>
             <ChartLoader
                 loading={expenseAnalyticsStore.yearlyLoading}
                 error={expenseAnalyticsStore.yearlyError}
@@ -50,6 +61,15 @@ const ExpensesAnalyticsPage: React.FC = () => {
                     data={expenseAnalyticsStore.yearlyCategoryBreakdown}
                 />
             </ChartLoader>
+
+            <Divider />
+
+            <Stack direction="row" alignItems="center" spacing={1}>
+                <Typography variant="h6">Monthly Breakdown</Typography>
+                <Tooltip title="Expense distribution by category for the selected month">
+                    <InfoOutlinedIcon fontSize="small" color="action" />
+                </Tooltip>
+            </Stack>
             <ChartLoader
                 loading={expenseAnalyticsStore.monthlyLoading}
                 error={expenseAnalyticsStore.monthlyError}
