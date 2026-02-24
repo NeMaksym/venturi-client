@@ -30,8 +30,16 @@ export const YearlyCategoryChart: React.FC<YearlyCategoryChartProps> = ({
                 id: category,
                 data: amounts,
                 label: category,
+                valueFormatter: (v: number | null) =>
+                    v != null ? `$${v.toFixed(2)}` : '',
             }))}
             xAxis={[{ scaleType: 'point', data: xLabels }]}
+            yAxis={[
+                {
+                    valueFormatter: (v: number | null) =>
+                        v != null ? `$${v}` : '',
+                },
+            ]}
             hideLegend
         />
     )
