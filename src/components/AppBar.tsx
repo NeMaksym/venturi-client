@@ -21,7 +21,7 @@ export const TopBar: React.FC = () => {
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                     Venturi{' '}
                     <Box component="sup" sx={{ fontSize: '0.6em', ml: -0.5 }}>
-                        Beta
+                        Alfa
                     </Box>
                 </Typography>
                 <IconButton

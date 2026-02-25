@@ -1,8 +1,26 @@
-# Feature List
+# Beta features
+
+## Quick improvements
+
+- [ ] Select input on split modal open
+- [ ] Accept split input value on Enter
+- [ ] Show hint on hidden labels hover
+- [ ] Labels vertical resize issue
+- [ ] Category horizontal resize
+- [ ] Sort categories by size on analytics page (popup in yearly; montly itself)
 
 ## General
 
 - [ ] Add cash transactions
+- [ ] Add multilingual support
+- [ ] Add feedback form
+
+## Upload
+
+- [ ] Unify view
+- [ ] Add contry icons
+- [ ] Refactor plugin registation
+- [ ] Add instructions
 
 ## Expenses
 
@@ -16,3 +34,7 @@
 - [ ] Filter by label on expenses analytics
 - [ ] List transaction on click
 - [ ] Yearly chart median. By category?
+
+## Under consideration
+
+- [ ] Use MCC to preselect category
