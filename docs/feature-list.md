@@ -8,6 +8,7 @@
 - [ ] Labels vertical resize issue
 - [ ] Category horizontal resize
 - [ ] Sort categories by size on analytics page (popup in yearly; montly itself)
+- [ ] Handle Esc key on dialogs
 
 ## General
 
@@ -21,6 +22,7 @@
 - [ ] Add contry icons
 - [ ] Refactor plugin registation
 - [ ] Add instructions
+- [ ] Explaine Monobank limitations
 
 ## Expenses
 
