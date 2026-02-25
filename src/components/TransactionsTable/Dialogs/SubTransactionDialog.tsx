@@ -35,17 +35,17 @@ export const SubTransactionDialog: React.FC<SubTransactionDialogProps> = ({
         parsedAmount > 0 &&
         toSmallestUnit(parsedAmount) <= maxAmount
 
+    const handleClose = () => {
+        setAmount('')
+        setTouched(false)
+        onCancel()
+    }
+
     const handleSubmit = () => {
         if (!isFormValid) return
 
         onSubmit(parsedAmount)
-        handleCancel()
-    }
-
-    const handleCancel = () => {
-        setAmount('')
-        setTouched(false)
-        onCancel()
+        handleClose()
     }
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -57,7 +57,7 @@ export const SubTransactionDialog: React.FC<SubTransactionDialogProps> = ({
     return (
         <Dialog
             open={open}
-            onClose={handleCancel}
+            onClose={handleClose}
             aria-labelledby="sub-transaction-dialog-title"
             maxWidth="sm"
             fullWidth
@@ -100,7 +100,7 @@ export const SubTransactionDialog: React.FC<SubTransactionDialogProps> = ({
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleCancel} color="primary">
+                <Button onClick={handleClose} color="primary">
                     Cancel
                 </Button>
                 <Button
