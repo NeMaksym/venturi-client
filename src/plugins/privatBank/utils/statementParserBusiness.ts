@@ -3,7 +3,7 @@ import cc from 'currency-codes'
 
 import type { SourceTransaction } from '../../../types'
 
-const HEADER_ROWS_COUNT = 5
+const HEADER_ROWS_COUNT = 14
 const REQUIRED_COLUMNS_COUNT = 11
 
 class PrivatBankStatementHeader {
@@ -175,9 +175,9 @@ export const parsePrivateBankBusinessStatement = async (
             )
         }
 
-        const headerRow = rows[1]
-        const header = new PrivatBankStatementHeader(headerRow)
-        const iban = header.extractIban()
+        const ibanRow = rows[4]
+        const row = new PrivatBankStatementHeader(ibanRow)
+        const iban = row.extractIban()
 
         const dataRows = rows.slice(HEADER_ROWS_COUNT)
 
