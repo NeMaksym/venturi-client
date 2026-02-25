@@ -7,7 +7,7 @@ import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'
 import Box from '@mui/material/Box'
 
-import { fromSmallestUnit } from '../../../utils'
+import { fromSmallestUnit, toSmallestUnit } from '../../../utils'
 
 interface SubTransactionDialogProps {
     open: boolean
@@ -16,7 +16,6 @@ interface SubTransactionDialogProps {
     onCancel: () => void
 }
 
-// TODO: Block submit if input > maxAmount
 export const SubTransactionDialog: React.FC<SubTransactionDialogProps> = ({
     open,
     maxAmount,
@@ -25,23 +24,27 @@ export const SubTransactionDialog: React.FC<SubTransactionDialogProps> = ({
 }) => {
     const inputRef = useRef<HTMLInputElement>(null)
     const [amount, setAmount] = useState<string>('')
+    const [touched, setTouched] = useState(false)
 
     const handleFormChange = (field: string, value: string) => setAmount(value)
 
+    const parsedAmount = parseFloat(amount)
+    const isFormValid =
+        amount !== '' &&
+        !isNaN(parsedAmount) &&
+        parsedAmount > 0 &&
+        toSmallestUnit(parsedAmount) <= maxAmount
+
     const handleSubmit = () => {
-        onSubmit(parseFloat(amount))
+        onSubmit(parsedAmount)
         handleCancel()
     }
 
     const handleCancel = () => {
         setAmount('')
+        setTouched(false)
         onCancel()
     }
-
-    const isFormValid =
-        amount !== '' &&
-        !isNaN(parseFloat(amount)) &&
-        parseFloat(amount) <= maxAmount
 
     return (
         <Dialog
@@ -75,10 +78,12 @@ export const SubTransactionDialog: React.FC<SubTransactionDialogProps> = ({
                         label="Amount"
                         type="number"
                         value={amount}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                            setTouched(true)
                             handleFormChange('amount', e.target.value)
-                        }
+                        }}
                         helperText={`Maximum: ${fromSmallestUnit(maxAmount)}`}
+                        error={touched && !isFormValid}
                         fullWidth
                         required
                         autoFocus
