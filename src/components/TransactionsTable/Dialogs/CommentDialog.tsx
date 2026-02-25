@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import Typography from '@mui/material/Typography'
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
@@ -21,6 +21,7 @@ export const CommentDialog: React.FC<CommentDialogProps> = ({
     onSubmit,
     onClose,
 }) => {
+    const inputRef = useRef<HTMLInputElement>(null)
     const [value, setValue] = useState(comment)
 
     const handleSubmit = () => {
@@ -41,6 +42,13 @@ export const CommentDialog: React.FC<CommentDialogProps> = ({
             aria-labelledby="comment-dialog-title"
             maxWidth="sm"
             fullWidth
+            slotProps={{
+                transition: {
+                    onEnter: () => {
+                        inputRef.current?.focus()
+                    },
+                },
+            }}
         >
             <DialogTitle id="comment-dialog-title">Comment</DialogTitle>
             <DialogContent>
@@ -53,6 +61,7 @@ export const CommentDialog: React.FC<CommentDialogProps> = ({
                     }}
                 >
                     <TextField
+                        inputRef={inputRef}
                         value={value}
                         onChange={(e) => setValue(e.target.value)}
                         onKeyUp={handleKeyPress}

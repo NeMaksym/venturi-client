@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
@@ -23,6 +23,7 @@ export const SubTransactionDialog: React.FC<SubTransactionDialogProps> = ({
     onSubmit,
     onCancel,
 }) => {
+    const inputRef = useRef<HTMLInputElement>(null)
     const [amount, setAmount] = useState<string>('')
 
     const handleFormChange = (field: string, value: string) => setAmount(value)
@@ -49,6 +50,13 @@ export const SubTransactionDialog: React.FC<SubTransactionDialogProps> = ({
             aria-labelledby="sub-transaction-dialog-title"
             maxWidth="sm"
             fullWidth
+            slotProps={{
+                transition: {
+                    onEnter: () => {
+                        inputRef.current?.focus()
+                    },
+                },
+            }}
         >
             <DialogTitle id="sub-transaction-dialog-title">
                 Create Sub-transaction
@@ -63,6 +71,7 @@ export const SubTransactionDialog: React.FC<SubTransactionDialogProps> = ({
                     }}
                 >
                     <TextField
+                        inputRef={inputRef}
                         label="Amount"
                         type="number"
                         value={amount}
@@ -72,6 +81,7 @@ export const SubTransactionDialog: React.FC<SubTransactionDialogProps> = ({
                         helperText={`Maximum: ${fromSmallestUnit(maxAmount)}`}
                         fullWidth
                         required
+                        autoFocus
                     />
                 </Box>
             </DialogContent>
