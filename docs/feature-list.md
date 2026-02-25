@@ -2,8 +2,8 @@
 
 ## Quick improvements
 
-- [ ] Select input on split modal open
-- [ ] Accept split input value on Enter
+- [x] Select input on split modal open
+- [x] Accept split input value on Enter
 - [ ] Show hint on hidden labels hover
 - [ ] Labels vertical resize issue
 - [ ] Category horizontal resize
