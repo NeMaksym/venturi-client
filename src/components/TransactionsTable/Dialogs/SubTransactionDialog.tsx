@@ -36,6 +36,8 @@ export const SubTransactionDialog: React.FC<SubTransactionDialogProps> = ({
         toSmallestUnit(parsedAmount) <= maxAmount
 
     const handleSubmit = () => {
+        if (!isFormValid) return
+
         onSubmit(parsedAmount)
         handleCancel()
     }
@@ -44,6 +46,12 @@ export const SubTransactionDialog: React.FC<SubTransactionDialogProps> = ({
         setAmount('')
         setTouched(false)
         onCancel()
+    }
+
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            handleSubmit()
+        }
     }
 
     return (
@@ -82,6 +90,7 @@ export const SubTransactionDialog: React.FC<SubTransactionDialogProps> = ({
                             setTouched(true)
                             handleFormChange('amount', e.target.value)
                         }}
+                        onKeyUp={handleKeyPress}
                         helperText={`Maximum: ${fromSmallestUnit(maxAmount)}`}
                         error={touched && !isFormValid}
                         fullWidth
