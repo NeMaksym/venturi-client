@@ -15,6 +15,8 @@ interface TransactionRowProps {
     data: AnyTransaction
 }
 
+const ONE_CENT = 1
+
 export const TransactionBodyRow: React.FC<TransactionRowProps> = ({ data }) => (
     <TableRow sx={{ opacity: data.hide ? 0.5 : 1 }}>
         <DateCell time={data.time} />
@@ -35,7 +37,7 @@ export const TransactionBodyRow: React.FC<TransactionRowProps> = ({ data }) => (
             comment={data.comment}
             isHidden={data.hide}
             isCapitalized={data.capitalized}
-            maxSubTransactionAmount={data.source.amount}
+            maxSubTransactionAmount={data.source.amount - ONE_CENT}
         />
     </TableRow>
 )
